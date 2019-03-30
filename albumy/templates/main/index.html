@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}主页{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col-md-8">
+                <img src="{{ url_for('static', filename='images/index.jpg') }}" class="rounded img-fluid">
+            </div>
+            <div class="col-md-4 align-self-center">
+                <h1>Albumy</h1>
+                <p>捕捉或是分享你生活中的每一份精彩.</p>
+                <p><a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}">现在注册</a></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

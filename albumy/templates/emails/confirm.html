@@ -1,0 +1,6 @@
+<p>你好 {{ user.name }}</p>
+<p>欢迎加入<b>Albumy</b></p>
+<p>请点击下方的连接验证你的邮箱:<br>
+    <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">{{ url_for('auth.confirm', token=token, _external=True) }}</a>
+</p>
+<small>(这封邮件由系统自动发送, 请勿回复!)</small>
