@@ -23,7 +23,7 @@ def redirect_back(default='main.index', **kwargs):
 
 
 def generate_token(user, operation, expires_in=None, **kwargs):
-    s = Serializer(current_app.config['SECRET_KEY'], expires_in)
+    s = Serializer(current_app.config['SECRET_KEY'], expires_in=expires_in)
     data = dict(id=user.id, operation=operation)
     data.update(**kwargs)
     return s.dumps(data).decode()
@@ -35,12 +35,13 @@ def validate_token(token, user, operation, password=None):
         data = s.loads(token)
     except (SignatureExpired, BadSignature):
         return False
+
     if data.get('id') != user.id or data.get('operation') != operation:
         return False
 
     if operation == Operations.CONFIRM:
         user.confirmed = True
-    if operation == Operations.RESET_PASSWORD:
+    elif operation == Operations.RESET_PASSWORD:
         user.password = password
     else:
         return False
@@ -53,3 +54,14 @@ def flash_errors(form):
     for field, errors in form.errors.items():
         for error in errors:
             flash('%s字段中有错误:%s' % (getattr(form, field).label.text, error), 'dangers')
+
+
+def init_user_permission():
+    from .models import User, Role
+    for user in User.query.all():
+        if user.email == current_app.config['ALBUMY_ADMIN_EMAIL']:
+            user.role = Role.query.filter_by(name='Administrator').first()
+        else:
+            user.role = Role.query.filter_by(name='User').first()
+        db.session.add(user)
+    db.session.commit()

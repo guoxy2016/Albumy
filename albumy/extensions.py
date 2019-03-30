@@ -8,7 +8,8 @@ from sqlalchemy import MetaData
 
 convention = {
     "ix": 'ix_%(column_0_label)s',
-    "uq": "uq_%(column_0_name)s",
+    "uq": "uq_%(column_0_label)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s"
 }
 metadata = MetaData(naming_convention=convention)
 
@@ -18,7 +19,6 @@ bootstrap = Bootstrap()
 migrate = Migrate()
 mail = Mail()
 moment = Moment()
-
 
 login_manager.login_view = 'auth.login'
 login_manager.login_message = '请先登陆'

@@ -1,3 +1,5 @@
+import os
+
 from faker import Faker
 from sqlalchemy.exc import IntegrityError
 
@@ -10,7 +12,7 @@ fake = Faker('zh_CN')
 def fake_admin():
     admin = User(
         name='张三丰',
-        email='guoxy_mail0122@qq.com',
+        email=os.getenv('ALBUMY_ADMIN', 'admin@helloflask.com'),
         username='admin',
         website='http://www.example.com',
         bio=fake.sentence(),
@@ -30,7 +32,7 @@ def fake_users(count=10):
             website=fake.url(),
             bio=fake.sentence(),
             location=fake.city(),
-            member_since=fake.data_this_decade(),
+            member_since=fake.date_this_decade(),
             confirmed=True
         )
         user.password = '12345678'

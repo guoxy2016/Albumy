@@ -7,7 +7,7 @@ from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment
-from .models import User
+from .models import User, Role, Permission
 
 
 def create_app(config_name=None):
@@ -51,7 +51,7 @@ def register_blueprints(app=None):
 def register_shell_context(app=None):
     @app.shell_context_processor
     def template_context():
-        return dict(db=db, User=User)
+        return dict(db=db, User=User, Role=Role, Permission=Permission)
 
 
 def register_template_context(app=None):
@@ -94,6 +94,9 @@ def register_commends(app=None):
         click.echo('Initializing the database')
         db.create_all()
 
+        click.echo('Initializing the roles and permissions')
+        Role.init_role()
+
         click.echo('Done!')
 
     @app.cli.command()
@@ -104,6 +107,9 @@ def register_commends(app=None):
 
         db.drop_all()
         db.create_all()
+
+        click.echo('Initializing the roles and permissions')
+        Role.init_role()
 
         click.echo('Generating Administrator...')
         fake_admin()
