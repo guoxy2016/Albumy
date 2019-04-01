@@ -48,3 +48,6 @@ celerybeat-schedule
 data-dev.sqlite3
 data.sqlite3
 Pipfile.lock
+uploads/*
+!uploads/.gitkeep
+

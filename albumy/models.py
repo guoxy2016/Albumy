@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', back_populates='user')
+    photos = db.relationship('Photo', back_populates='author', cascade='all')
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
@@ -37,12 +38,12 @@ class User(db.Model, UserMixin):
         return self.role.name == 'Administrator'
 
     def can(self, permission_name):
-        permission = Permission.qeury.filter_by(name=permission_name).first()
+        permission = Permission.query.filter_by(name=permission_name).first()
         return permission is not None and self.role is not None and permission in self.role.permissions
 
     @property
     def password(self):
-        raise AttributeError('password is not readable')
+        raise AttributeError('password can not readable')
 
     @password.setter
     def password(self, value):
@@ -99,3 +100,15 @@ class Permission(db.Model):
 roles_permissions = db.Table('roles_permissions',
                              db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                              db.Column('permission_id', db.Integer, db.ForeignKey('permission.id')))
+
+
+class Photo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(64))
+    filename_m = db.Column(db.String(64))
+    filename_s = db.Column(db.String(64))
+
+    description = db.Column(db.String(500))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.relationship('User', back_populates='photos')

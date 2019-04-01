@@ -16,8 +16,19 @@ class BaseConfig:
     ALBUMY_MANAGE_COMMENT_PER_PAGE = 30
     ALBUMY_SEARCH_RESULT_PER_PAGE = 20
     ALBUMY_MAIL_SUBJECT_PREFIX = '[Albumy]'
+    ALBUMY_UPLOAD_PATH = os.path.join(basedir, 'uploads')
+    ALBUMY_ALLOW_EXTENSIONS = ['jpg', 'jpeg', 'png', ]
+    ALBUMY_PHOTO_SIZE = {
+        'small': 400,
+        'medium': 800,
+    }
+    ALBUMY_PHOTO_SUFFIX = {
+        ALBUMY_PHOTO_SIZE['small']: '_s',
+        ALBUMY_PHOTO_SIZE['medium']: '_m',
+    }
 
     SECRET_KEY = 'secret key'
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -27,6 +38,18 @@ class BaseConfig:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('Albumy', MAIL_USERNAME)
+
+    DROPZONE_MAX_FILE_SIZE = 5
+    DROPZONE_MAX_FILES = 20
+    DROPZONE_DEFAULT_MESSAGE = '<h2>拖拽文件到这里,或点击上传</h2>'
+    DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_ALLOWED_FILE_TYPE = '.png, .jpg, .jpeg, .jpe, .tif'
+    DROPZONE_INVALID_FILE_TYPE = '不支持的文件格式'
+    DROPZONE_FILE_TOO_BIG = '当前文件过大{{filesize}}MB.最大支持{{maxFilesize}}MB的文件'
+    DROPZONE_SERVER_ERROR = '服务端错误:{{statusCode}}'
+    DROPZONE_BROWSER_UNSUPPORTED = '浏览器不支持'
+    DROPZONE_MAX_FILE_EXCEED = '超出最大上传数量'
+    DROPZONE_ENABLE_CSRF = True
 
 
 class Development(BaseConfig):

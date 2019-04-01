@@ -7,10 +7,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>{% block title %}主页{% endblock %}</title>
         <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-        <link rel="stylesheet"
-              href="{{ url_for('static', filename='open-iconic/font/css/open-iconic-bootstrap.min.css') }}">
+        {% block style %}
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+            <link rel="stylesheet"
+                  href="{{ url_for('static', filename='open-iconic/font/css/open-iconic-bootstrap.min.css') }}">
+        {% endblock %}
     {% endblock %}
 </head>
 <body>
@@ -39,20 +41,21 @@
                 <div class="navbar-nav ml-auto">
                     {% if current_user.is_authenticated %}
                         <div class="dropdown nav-item">
-                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
-                           aria-expanded="false">
-                            {{ current_user.name }}<span class="caret"></span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" role="menu">
-                            <h6 class="dropdown-header">{{ current_user.username }} 已登陆</h6>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <span class="oi oi-power-standby"></span> 退出
+                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
+                               aria-expanded="false">
+                                {{ current_user.name }}<span class="caret"></span>
                             </a>
+                            <div class="dropdown-menu dropdown-menu-right" role="menu">
+                                <h6 class="dropdown-header">{{ current_user.username }} 已登陆</h6>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <span class="oi oi-power-standby"></span> 退出
+                                </a>
+                            </div>
                         </div>
-                    </div>
                     {% else %}
-                        <a class="btn btn-outline-primary" href="{{ url_for('auth.login', next=request.full_path) }}">登陆</a>&nbsp;&nbsp;
+                        <a class="btn btn-outline-primary"
+                           href="{{ url_for('auth.login', next=request.full_path) }}">登陆</a>&nbsp;&nbsp;
                         <a class="btn btn-primary" href="{{ url_for('auth.register') }}">加入Albumy</a>
                     {% endif %}
                 </div>
