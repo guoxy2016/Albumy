@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import current_app
+from flask_avatars import Identicon
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -22,9 +23,21 @@ class User(db.Model, UserMixin):
     role = db.relationship('Role', back_populates='user')
     photos = db.relationship('Photo', back_populates='author', cascade='all')
 
+    avatar_s = db.Column(db.String(64))
+    avatar_m = db.Column(db.String(64))
+    avatar_l = db.Column(db.String(64))
+
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
         self.set_role()
+        self.generate_avatar()
+
+    def generate_avatar(self):
+        avatar = Identicon()
+        filenames = avatar.generate(self.name)
+        self.avatar_s = filenames[0]
+        self.avatar_m = filenames[1]
+        self.avatar_l = filenames[2]
 
     def set_role(self):
         if self.role is None:

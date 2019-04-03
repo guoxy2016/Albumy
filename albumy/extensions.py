@@ -1,3 +1,4 @@
+from flask_avatars import Avatars
 from flask_bootstrap import Bootstrap
 from flask_dropzone import Dropzone
 from flask_login import LoginManager, AnonymousUserMixin
@@ -23,6 +24,7 @@ mail = Mail()
 moment = Moment()
 dropzone = Dropzone()
 csrf = CSRFProtect()
+avatars = Avatars()
 
 login_manager.login_view = 'auth.login'
 login_manager.login_message = '请先登陆'

@@ -49,5 +49,7 @@ data-dev.sqlite3
 data.sqlite3
 Pipfile.lock
 uploads/*
+!uploads/avatars
 !uploads/.gitkeep
-
+uploads/avatars/*
+!uploads/avatars/.gitkeep

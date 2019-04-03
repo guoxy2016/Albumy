@@ -51,6 +51,9 @@ class BaseConfig:
     DROPZONE_MAX_FILE_EXCEED = '超出最大上传数量'
     DROPZONE_ENABLE_CSRF = True
 
+    AVATARS_SAVE_PATH = os.path.join(ALBUMY_UPLOAD_PATH, 'avatars')
+    AVATARS_SIZE_TUPLE = (30, 100, 200)
+
 
 class Development(BaseConfig):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite3')

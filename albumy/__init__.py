@@ -6,7 +6,7 @@ from flask import Flask, render_template
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
-from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf
+from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
 from .models import User, Role, Permission
 
 
@@ -42,6 +42,7 @@ def register_extensions(app=None):
     login_manager.init_app(app)
     dropzone.init_app(app)
     csrf.init_app(app)
+    avatars.init_app(app)
 
 
 def register_blueprints(app=None):
@@ -64,6 +65,10 @@ def register_errors(app=None):
     @app.errorhandler(400)
     def bad_request(e):
         return render_template('errors/400.html')
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors/403.html')
 
     @app.errorhandler(404)
     def not_found(e):

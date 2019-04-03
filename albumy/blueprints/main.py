@@ -1,13 +1,13 @@
 import os
 
-from flask import Blueprint, render_template, request, current_app
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, request, current_app, send_from_directory
 from flask_dropzone import random_filename
+from flask_login import login_required, current_user
 
-from ..utils import resize_image
+from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..models import Photo
-from ..decorators import confirm_required, permission_required
+from ..utils import resize_image
 
 main_bp = Blueprint('main', __name__)
 
@@ -42,3 +42,13 @@ def upload():
         db.session.add(photo)
         db.session.commit()
     return render_template('main/upload.html')
+
+
+@main_bp.route('/avatars/<path:filename>')
+def get_avatar(filename):
+    return send_from_directory(current_app.config['AVATARS_SAVE_PATH'], filename)
+
+
+@main_bp.route('/uploads/<path:filename>')
+def get_image(filename):
+    return send_from_directory(current_app.config['AVATARS_ALBUMY_UPLOAD_PATH'], filename)
