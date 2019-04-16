@@ -55,7 +55,7 @@ def validate_token(token, user, operation, password=None):
 def flash_errors(form):
     for field, errors in form.errors.items():
         for error in errors:
-            flash('%s字段中有错误:%s' % (getattr(form, field).label.text, error), 'dangers')
+            flash('`%s`字段提交时出现错误:%s' % (getattr(form, field).label.text, error), 'danger')
 
 
 def init_user_permission():
@@ -66,6 +66,22 @@ def init_user_permission():
         else:
             user.role = Role.query.filter_by(name='User').first()
         db.session.add(user)
+    db.session.commit()
+
+
+def init_user_avatars():
+    from .models import User
+    for user in User.query.all():
+        user.generate_avatar()
+        db.session.add(user)
+    db.session.commit()
+
+
+def init_photo_flag():
+    from .models import Photo
+    for photo in Photo.query.all():
+        photo.flag = 0
+        db.session.add(photo)
     db.session.commit()
 
 

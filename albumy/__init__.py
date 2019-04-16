@@ -7,7 +7,7 @@ from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
-from .models import User, Role, Permission
+from .models import User, Role, Permission, Photo
 
 
 def create_app(config_name=None):
@@ -54,7 +54,7 @@ def register_blueprints(app=None):
 def register_shell_context(app=None):
     @app.shell_context_processor
     def template_context():
-        return dict(db=db, User=User, Role=Role, Permission=Permission)
+        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo)
 
 
 def register_template_context(app=None):

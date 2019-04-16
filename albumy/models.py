@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from flask import current_app
@@ -120,8 +121,30 @@ class Photo(db.Model):
     filename = db.Column(db.String(64))
     filename_m = db.Column(db.String(64))
     filename_s = db.Column(db.String(64))
-
+    flag = db.Column(db.Integer, default=0)
     description = db.Column(db.String(500))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', back_populates='photos')
+    tags = db.relationship('Tag', back_populates='photos', secondary='tagging')
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), index=True)
+    photos = db.relationship('Photo', back_populates='tags', secondary='tagging')
+
+
+tagging = db.Table('tagging',
+                   db.Column('photo_id', db.ForeignKey('photo.id')),
+                   db.Column('tag_id', db.ForeignKey('tag.id')))
+
+
+@db.event.listens_for(Photo, 'after_delete', named=True)
+def delete_photos(**kwargs):
+    target = kwargs['target']
+    for filename in [target.filename, target.filename_s, target.filename_m]:
+        if filename is not None:
+            path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
+            if os.path.exists(path):
+                os.remove(path)
