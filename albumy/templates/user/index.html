@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% from 'bootstrap/pagination.html' import render_pagination %}
-{% from '_macros.html' import photo_card %}
+{% from '_macros.html' import photo_card with context%}
 
 {% block title %}{{ user.name }}{% endblock %}
 

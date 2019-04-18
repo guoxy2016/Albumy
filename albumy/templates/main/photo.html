@@ -26,7 +26,7 @@
                 </form>
             {% endif %}
             <p><span class="oi oi-clock"></span>上传于{{ moment(photo.timestamp).format('LL') }}</p>
-{#            {% include 'main/_comments.html' %}#}
+            {% include 'main/_comments.html' %}
         </div>
         <div class="col-md-4">
             {% include 'main/_photo_sidebar.html' %}

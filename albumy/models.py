@@ -20,9 +20,11 @@ class User(db.Model, UserMixin):
     location = db.Column(db.String(50))
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
     confirmed = db.Column(db.Boolean, default=False)
+
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', back_populates='user')
     photos = db.relationship('Photo', back_populates='author', cascade='all')
+    comments = db.relationship('Comment', back_populates='author')
 
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))
@@ -123,10 +125,13 @@ class Photo(db.Model):
     filename_s = db.Column(db.String(64))
     flag = db.Column(db.Integer, default=0)
     description = db.Column(db.String(500))
+    can_comment = db.Column(db.Boolean, default=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', back_populates='photos')
     tags = db.relationship('Tag', back_populates='photos', secondary='tagging')
+    comments = db.relationship('Comment', back_populates='photo')
 
 
 class Tag(db.Model):
@@ -138,6 +143,21 @@ class Tag(db.Model):
 tagging = db.Table('tagging',
                    db.Column('photo_id', db.ForeignKey('photo.id')),
                    db.Column('tag_id', db.ForeignKey('tag.id')))
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    flag = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'))
+    photo = db.relationship('Photo', back_populates='comments')
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.relationship('User', back_populates='comments')
+    replied_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    replied = db.relationship('Comment', back_populates='replies', remote_side=[id])
+    replies = db.relationship('Comment', back_populates='replied', cascade='all')
 
 
 @db.event.listens_for(Photo, 'after_delete', named=True)

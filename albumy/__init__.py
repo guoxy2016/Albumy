@@ -53,7 +53,7 @@ def register_blueprints(app=None):
 
 def register_shell_context(app=None):
     @app.shell_context_processor
-    def template_context():
+    def shell_context():
         return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo)
 
 
@@ -64,23 +64,23 @@ def register_template_context(app=None):
 def register_errors(app=None):
     @app.errorhandler(400)
     def bad_request(e):
-        return render_template('errors/400.html')
+        return render_template('errors/400.html'), 400
 
     @app.errorhandler(403)
     def forbidden(e):
-        return render_template('errors/403.html')
+        return render_template('errors/403.html'), 403
 
     @app.errorhandler(404)
     def not_found(e):
-        return render_template('errors/404.html')
+        return render_template('errors/404.html'), 404
 
     @app.errorhandler(413)
     def too_large(e):
-        return render_template('errors/413.html')
+        return render_template('errors/413.html'), 413
 
     @app.errorhandler(500)
     def server_error(e):
-        return render_template('errors/500.html')
+        return render_template('errors/500.html'), 500
 
 
 def register_commends(app=None):

@@ -39,12 +39,12 @@
                                         <span class="oi oi-ellipses"></span>
                                     </button>
                                     <span class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        {% if current_user != comment.author %}
+{#                                        {% if current_user != comment.author %}#}
                                             <a class="dropdown-item btn"
                                                href="{{ url_for('.reply_comment', comment_id=comment.id) }}">
                                             <span class="oi oi-comment-square"></span> 回复
                                         </a>
-                                        {% endif %}
+{#                                        {% endif %}#}
 
                                         {% if current_user == comment.author or current_user == photo.author %}
                                             <a class="dropdown-item" data-toggle="modal" href="#!"
@@ -99,7 +99,7 @@
                         <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
                     </div>
                     <div class="comment-form" id="comment-form">
-                        {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, page=pagination.pages), extra_classes="text-right") }}
+                        {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, reply=request.args.get('reply'), page=pagination.pages or 1), extra_classes="text-right") }}
                     </div>
                 </div>
             {% else %}

@@ -6,8 +6,8 @@ from flask_login import login_required, current_user
 
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
-from ..forms.main import DescriptionForm, TagForm
-from ..models import Photo, Tag
+from ..forms.main import DescriptionForm, TagForm, CommentForm
+from ..models import Photo, Tag, Comment
 from ..utils import resize_image, flash_errors
 
 main_bp = Blueprint('main', __name__)
@@ -58,10 +58,19 @@ def get_image(filename):
 @main_bp.route('/photo/<int:photo_id>')
 def show_photo(photo_id):
     photo = Photo.query.get_or_404(photo_id)
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['ALBUMY_COMMENT_PER_PAGE']
+    pagination = Comment.query.with_parent(photo).order_by(Comment.timestamp.desc()).paginate(page, per_page)
+    comments = pagination.items
+
     description_form = DescriptionForm()
-    description_form.description.data = photo.description
     tag_form = TagForm()
-    return render_template('main/photo.html', photo=photo, description_form=description_form, tag_form=tag_form)
+    comment_form = CommentForm()
+
+    description_form.description.data = photo.description
+
+    return render_template('main/photo.html', photo=photo, description_form=description_form, tag_form=tag_form,
+                           pagination=pagination, comments=comments, comment_form=comment_form)
 
 
 @main_bp.route('/photo/n/<int:photo_id>')
@@ -167,12 +176,82 @@ def delete_tag(photo_id, tag_id):
     if not tag.photos:
         db.session.delete(tag)
         db.session.commit()
-    
+
     flash('标签已删除', 'info')
     return redirect(url_for('.show_photo', photo_id=photo.id))
 
 
 @main_bp.route('/tag/<int:tag_id>', defaults={'order': 'by_time'})
-@main_bp.route('/tag/<int:tag_id>/<order>')
+@main_bp.route('/tag/<int:tag_id>/<any(by_time, by_collects):order>')
 def show_tag(tag_id, order):
+    tag = Tag.query.get_or_404(tag_id)
+    page = request.args.get('page', 1, int)
+    per_page = current_app.config['ALBUMY_PHOTO_PER_PAGE']
+    order_rule = '时间'
+    pagination = Photo.query.with_parent(tag).order_by(Photo.timestamp.desc()).paginate(page, per_page)
+    photos = pagination.items
+
+    if order == 'by_collects':
+        order_rule = '收藏量'
+        photos.sort(lambda x: len(x.collectors), reverse=True)
+    return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
+
+
+@main_bp.route('/set-comment/<int:photo_id>')
+@login_required
+def set_comment(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author:
+        abort(403)
+    if photo.can_comment:
+        photo.can_comment = False
+        flash('评论已关闭', 'info')
+    else:
+        photo.can_comment = True
+        flash('评论已开启', 'info')
+    db.session.commit()
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/comment/new', methods=['POST'])
+@login_required
+@permission_required('COMMENT')
+def new_comment(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    page = request.args.get('page', 1, type=int)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data)
+        comment.author = current_user._get_current_object()
+        comment.photo = photo
+
+        replied_id = request.args.get('reply')
+        if replied_id:
+            comment.replied = Comment.query.get_or_404(replied_id)
+        db.session.add(comment)
+        db.session.commit()
+        flash('已评论', 'success')
+    flash_errors(form)
+    return redirect(url_for('.show_photo', photo_id=photo_id, page=page))
+
+
+@main_bp.route('/reply/comment/<int:comment_id>')
+@login_required
+@permission_required('COMMENT')
+def reply_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    return redirect(url_for('.show_photo', photo_id=comment.photo.id, reply=comment_id,
+                            author=comment.author.name) + '#comment-form')
+
+
+@main_bp.route('/delete/comment/<int:comment_id>')
+@login_required
+def delete_comment(comment_id):
+    pass
+
+
+@main_bp.route('/report/comment/<int:comment_id>')
+@login_required
+@confirm_required
+def report_comment(comment_id):
     pass
