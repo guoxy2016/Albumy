@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, url_for, render_template
+from flask import Blueprint, flash, redirect, url_for, render_template, request
 from flask_login import current_user, login_required, login_user, logout_user
 
 from ..emails import send_confirm_email, send_reset_password_email
@@ -15,6 +15,7 @@ auth_bp = Blueprint('auth', __name__)
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
+    next_path = request.args.get('next')
     form = RegisterForm()
     if form.validate_on_submit():
         name = form.name.data
@@ -29,6 +30,8 @@ def register():
         send_confirm_email(user, token)
 
         flash('验证邮件已发送, 请注意查收.', 'info')
+        if next_path:
+            return redirect(url_for('.login', next=next_path))
         return redirect(url_for('.login'))
     return render_template('auth/register.html', form=form)
 
@@ -55,7 +58,7 @@ def login():
 def logout():
     logout_user()
     flash('退出成功', 'success')
-    return redirect(url_for('main.index'))
+    return redirect_back()
 
 
 @auth_bp.route('/confirm/<token>')

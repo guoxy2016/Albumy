@@ -8,7 +8,7 @@ from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
 from ..models import Photo, Tag, Comment
-from ..utils import resize_image, flash_errors
+from ..utils import resize_image, flash_errors, redirect_back
 
 main_bp = Blueprint('main', __name__)
 
@@ -135,6 +135,7 @@ def edit_description(photo_id):
         photo.description = form.description.data
         db.session.commit()
         flash('描述修改成功', 'success')
+        return redirect(url_for('.show_photo', photo_id=photo_id))
     flash_errors(form)
     return redirect(url_for('.show_photo', photo_id=photo_id))
 
@@ -157,7 +158,7 @@ def new_tag(photo_id):
                 photo.tags.append(tag)
                 db.session.commit()
         flash('标签已添加', 'success')
-
+        return redirect(url_for('.show_photo', photo_id=photo_id))
     flash_errors(form)
     return redirect(url_for('.show_photo', photo_id=photo.id))
 
@@ -201,6 +202,7 @@ def show_tag(tag_id, order):
 @login_required
 def set_comment(photo_id):
     photo = Photo.query.get_or_404(photo_id)
+    page = request.args.get('page', 1, type=int)
     if current_user != photo.author:
         abort(403)
     if photo.can_comment:
@@ -210,7 +212,7 @@ def set_comment(photo_id):
         photo.can_comment = True
         flash('评论已开启', 'info')
     db.session.commit()
-    return redirect(url_for('.show_photo', photo_id=photo_id))
+    return redirect(url_for('.show_photo', photo_id=photo_id, page=page))
 
 
 @main_bp.route('/photo/<int:photo_id>/comment/new', methods=['POST'])
@@ -231,6 +233,7 @@ def new_comment(photo_id):
         db.session.add(comment)
         db.session.commit()
         flash('已评论', 'success')
+        return redirect(url_for('.show_photo', photo_id=photo_id, page=1))
     flash_errors(form)
     return redirect(url_for('.show_photo', photo_id=photo_id, page=page))
 
@@ -244,14 +247,25 @@ def reply_comment(comment_id):
                             author=comment.author.name) + '#comment-form')
 
 
-@main_bp.route('/delete/comment/<int:comment_id>')
+@main_bp.route('/delete/comment/<int:comment_id>', methods=['POST'])
 @login_required
 def delete_comment(comment_id):
-    pass
+    comment = Comment.query.get_or_404(comment_id)
+    if current_user != comment.author and current_user != comment.photo.author:
+        abort(403)
+    db.session.delete(comment)
+    db.session.commit()
+    flash('删除成功', 'info')
+    return redirect_back()
 
 
 @main_bp.route('/report/comment/<int:comment_id>')
 @login_required
 @confirm_required
 def report_comment(comment_id):
-    pass
+    comment = Comment.query.get_or_404(comment_id)
+    comment.flag += 1
+    db.session.commit()
+    flash('已举报', 'success')
+    return redirect(url_for('.show_photo', photo_id=comment.photo_id))
+

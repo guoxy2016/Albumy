@@ -1,5 +1,5 @@
 <div class="comments" id="comments">
-    <h3>{{ photo.comments|length }} 条评论
+    <h3 id="CommentHeader">{{ photo.comments|length }} 条评论
         <small>
             <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">Latest</a>
         </small>
@@ -39,28 +39,28 @@
                                         <span class="oi oi-ellipses"></span>
                                     </button>
                                     <span class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-{#                                        {% if current_user != comment.author %}#}
-                                            <a class="dropdown-item btn"
-                                               href="{{ url_for('.reply_comment', comment_id=comment.id) }}">
+                                        <a class="dropdown-item btn"
+                                           href="{{ url_for('.reply_comment', comment_id=comment.id) }}">
                                             <span class="oi oi-comment-square"></span> 回复
                                         </a>
-{#                                        {% endif %}#}
 
                                         {% if current_user == comment.author or current_user == photo.author %}
                                             <a class="dropdown-item" data-toggle="modal" href="#!"
-                                               data-href="{{ url_for('.delete_comment', comment_id=comment.id) }}"
+                                               data-href="{{ url_for('.delete_comment', comment_id=comment.id, next=request.full_path) }}"
                                                data-target="#confirm-delete">
                                             <span class="oi oi-trash" aria-hidden="true"></span> 删除
                                           </a>
                                         {% endif %}
 
-                                        <form class="inline" method="post"
-                                              action="{{ url_for('.report_comment', comment_id=comment.id) }}">
+                                        {% if current_user != comment.author %}
+                                            <form class="inline" method="post"
+                                                  action="{{ url_for('.report_comment', comment_id=comment.id) }}">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="dropdown-item">
                                                     <span class="oi oi-warning" aria-hidden="true"></span> 举报
                                                 </button>
                                         </form>
+                                        {% endif %}
                                     </span>
                                 </span>
                             </span>
@@ -96,7 +96,8 @@
                 {% endif %}
                 <div class="comment-form-area">
                     <div class="comment-form-thumbnail">
-                        <img class="rounded img-fluid avatar-s" src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
+                        <img class="rounded img-fluid avatar-s"
+                             src="{{ url_for('main.get_avatar', filename=current_user.avatar_m) }}">
                     </div>
                     <div class="comment-form" id="comment-form">
                         {{ render_form(comment_form, action=url_for('.new_comment', photo_id=photo.id, reply=request.args.get('reply'), page=pagination.pages or 1), extra_classes="text-right") }}
@@ -109,9 +110,9 @@
             {% endif %}
         {% else %}
             <p class="tip">
-                <a href="{{ url_for('auth.login') }}">登录</a>
+                <a href="{{ url_for('auth.login', next=request.full_path) }}">登录</a>
                 或
-                <a href="{{ url_for('auth.register') }}">注册</a> 后评论.
+                <a href="{{ url_for('auth.register', next=request.full_path) }}">注册</a> 后评论.
             </p>
         {% endif %}
     {% else %}

@@ -7,7 +7,7 @@ from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
-from .models import User, Role, Permission, Photo
+from .models import User, Role, Permission, Photo, Tag, Comment
 
 
 def create_app(config_name=None):
@@ -30,7 +30,7 @@ def create_app(config_name=None):
 
 
 def register_logging(app=None):
-    ...
+    pass
 
 
 def register_extensions(app=None):
@@ -54,11 +54,11 @@ def register_blueprints(app=None):
 def register_shell_context(app=None):
     @app.shell_context_processor
     def shell_context():
-        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo)
+        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo, Tag=Tag, Comment=Comment)
 
 
 def register_template_context(app=None):
-    ...
+    pass
 
 
 def register_errors(app=None):
@@ -107,10 +107,13 @@ def register_commends(app=None):
         click.echo('Done!')
 
     @app.cli.command()
-    @click.option('--user', default=10, help='Quantity of users, default is 10')
-    def forge(user):
+    @click.option('--user', default=6, help='Quantity of users, default is 6')
+    @click.option('--photo', default=30, help='Quantity of photo, default is 30')
+    @click.option('--tag', default=20, help='quality of tag, default is 20')
+    @click.option('--comment', default=100, help='Quality of comment, default is 100')
+    def forge(user, photo, tag, comment):
         """Generate fake data"""
-        from .fakes import fake_admin, fake_users
+        from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments
 
         db.drop_all()
         db.create_all()
@@ -123,5 +126,14 @@ def register_commends(app=None):
 
         click.echo('Generating %d users...' % user)
         fake_users(count=user)
+
+        click.echo('Generating %d tags...' % tag)
+        fake_tags(count=tag)
+
+        click.echo('Generating %d photos...' % photo)
+        fake_photos(count=photo)
+
+        click.echo('Generating %d comments...' % comment)
+        fake_comments(count=comment)
 
         click.echo('Done!')

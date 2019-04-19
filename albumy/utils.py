@@ -10,7 +10,7 @@ from .settings import Operations
 
 
 def is_safe_url(target):
-    ref_url = urlparse(request.full_path)
+    ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
     return test_url.scheme in ('http', 'https') and test_url.netloc == ref_url.netloc
 
@@ -58,6 +58,20 @@ def flash_errors(form):
             flash('`%s`字段提交时出现错误:%s' % (getattr(form, field).label.text, error), 'danger')
 
 
+def resize_image(image, filename, base_width):
+    filename, ext = os.path.splitext(filename)
+    img = Image.open(image)
+    if img.size[0] < base_width:
+        return filename + ext
+    w_percent = (base_width / float(img.size[0]))
+    h_size = int((float(img.size[1])) * float(w_percent))
+    img = img.resize((base_width, h_size), Image.ANTIALIAS)
+    filename += current_app.config['ALBUMY_PHOTO_SUFFIX'][base_width] + ext
+    img.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename), optimize=True, quality=85)
+    return filename
+
+
+# 初始化内容
 def init_user_permission():
     from .models import User, Role
     for user in User.query.all():
@@ -83,16 +97,3 @@ def init_photo_flag():
         photo.flag = 0
         db.session.add(photo)
     db.session.commit()
-
-
-def resize_image(image, filename, base_width):
-    filename, ext = os.path.splitext(filename)
-    img = Image.open(image)
-    if img.size[0] < base_width:
-        return filename + ext
-    w_percent = (base_width / float(img.size[0]))
-    h_size = int((float(img.size[1])) * float(w_percent))
-    img = img.resize((base_width, h_size), Image.ANTIALIAS)
-    filename += current_app.config['ALBUMY_PHOTO_SUFFIX'][base_width] + ext
-    img.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename), optimize=True, quality=85)
-    return filename
