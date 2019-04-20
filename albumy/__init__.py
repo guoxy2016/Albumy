@@ -6,6 +6,7 @@ from flask import Flask, render_template
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
+from .blueprints.ajax import ajax_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
 from .models import User, Role, Permission, Photo, Tag, Comment
 
@@ -49,6 +50,7 @@ def register_blueprints(app=None):
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(user_bp, url_prefix='/user')
+    app.register_blueprint(ajax_bp, url_prefix='/ajax')
 
 
 def register_shell_context(app=None):
