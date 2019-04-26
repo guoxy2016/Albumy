@@ -3,12 +3,13 @@ import os
 import click
 from flask import Flask, render_template
 
+from albumy.fakes import fake_collects
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
 from .blueprints.ajax import ajax_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
-from .models import User, Role, Permission, Photo, Tag, Comment
+from .models import User, Role, Permission, Photo, Tag, Comment, Collect
 
 
 def create_app(config_name=None):
@@ -56,7 +57,7 @@ def register_blueprints(app=None):
 def register_shell_context(app=None):
     @app.shell_context_processor
     def shell_context():
-        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo, Tag=Tag, Comment=Comment)
+        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo, Tag=Tag, Comment=Comment, Collect=Collect)
 
 
 def register_template_context(app=None):
@@ -113,7 +114,8 @@ def register_commends(app=None):
     @click.option('--photo', default=30, help='Quantity of photo, default is 30')
     @click.option('--tag', default=20, help='quality of tag, default is 20')
     @click.option('--comment', default=100, help='Quality of comment, default is 100')
-    def forge(user, photo, tag, comment):
+    @click.option('--collect', default=50, help='Quality of collect, default is 50')
+    def forge(user, photo, tag, comment, collect):
         """Generate fake data"""
         from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments
 
@@ -137,5 +139,8 @@ def register_commends(app=None):
 
         click.echo('Generating %d comments...' % comment)
         fake_comments(count=comment)
+
+        click.echo('Generating %d collects...' % collect)
+        fake_collects(count=collect)
 
         click.echo('Done!')

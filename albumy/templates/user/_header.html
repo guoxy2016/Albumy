@@ -6,8 +6,7 @@
         <img class="img-fluid rounded" src="{{ url_for('main.get_avatar', filename=user.avatar_l) }}">
     </div>
     <div class="col-md-9">
-        <h1>
-            {{ user.name }}
+        <h1> {{ user.name }}
             <small class="text-muted">{{ user.username }}</small>
         </h1>
         {% if user.bio %}<p>{{ user.bio }}</p>{% endif %}
@@ -28,6 +27,7 @@
 </div>
 <div class="user-nav">
     <ul class="nav nav-tabs">
-        {{ render_nav_item('user.index', 'Photo', user.photos|length, username=user.username) }}
+        {{ render_nav_item('user.index', '图片', user.photos|length, username=user.username) }}
+        {{ render_nav_item('user.show_collections', '收藏', user.collections|length, username=user.username) }}
     </ul>
 </div>

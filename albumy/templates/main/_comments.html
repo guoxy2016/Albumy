@@ -1,7 +1,7 @@
 <div class="comments" id="comments">
     <h3 id="CommentHeader">{{ photo.comments|length }} 条评论
         <small>
-            <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">Latest</a>
+            <a href="{{ url_for('.show_photo', photo_id=photo.id, page=pagination.pages or 1) }}#comment-form">最后一页</a>
         </small>
         {% if current_user == photo.author %}
             <a class="btn btn-xs btn-link float-right" href="{{ url_for('.set_comment', photo_id=photo.id) }}">
@@ -113,6 +113,7 @@
             {% endif %}
         {% else %}
             <p class="tip">
+                请
                 <a href="{{ url_for('auth.login', next=request.full_path) }}">登录</a>
                 或
                 <a href="{{ url_for('auth.register', next=request.full_path) }}">注册</a> 后评论.

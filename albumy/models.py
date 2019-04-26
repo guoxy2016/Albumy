@@ -22,9 +22,10 @@ class User(db.Model, UserMixin):
     confirmed = db.Column(db.Boolean, default=False)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
-    role = db.relationship('Role', back_populates='user')
+    role = db.relationship('Role', back_populates='users')
     photos = db.relationship('Photo', back_populates='author', cascade='all')
     comments = db.relationship('Comment', back_populates='author')
+    collections = db.relationship('Collect', back_populates='collector', cascade='all')
 
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))
@@ -48,6 +49,21 @@ class User(db.Model, UserMixin):
                 self.role = Role.query.filter_by(name='Administrator').first()
             else:
                 self.role = Role.query.filter_by(name='User').first()
+
+    def collect(self, photo):
+        if not self.is_collecting(photo):
+            collect = Collect(collector=self, collected=photo)
+            db.session.add(collect)
+            db.session.commit()
+
+    def uncollect(self, photo):
+        collect = Collect.query.with_parent(self).filter_by(collected_id=photo.id).first()
+        if collect:
+            db.session.delete(collect)
+            db.session.commit()
+
+    def is_collecting(self, photo):
+        return Collect.query.with_parent(self).filter_by(collected_id=photo.id).first() is not None
 
     @property
     def is_admin(self):
@@ -76,7 +92,7 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
     permissions = db.relationship('Permission', back_populates='roles', secondary='roles_permissions')
-    user = db.relationship('User', back_populates='role')
+    users = db.relationship('User', back_populates='role')
 
     @staticmethod
     def init_role():
@@ -132,12 +148,16 @@ class Photo(db.Model):
     author = db.relationship('User', back_populates='photos')
     tags = db.relationship('Tag', back_populates='photos', secondary='tagging')
     comments = db.relationship('Comment', back_populates='photo')
+    collectors = db.relationship('Collect', back_populates='collected', cascade='all')
 
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), index=True)
     photos = db.relationship('Photo', back_populates='tags', secondary='tagging')
+
+    def __repr__(self):
+        return '<Tag %r>' % self.name
 
 
 tagging = db.Table('tagging',
@@ -158,6 +178,14 @@ class Comment(db.Model):
     replied_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
     replied = db.relationship('Comment', back_populates='replies', remote_side=[id])
     replies = db.relationship('Comment', back_populates='replied', cascade='all')
+
+
+class Collect(db.Model):
+    collector_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    collector = db.relationship('User', back_populates='collections', lazy='joined')
+    collected_id = db.Column(db.Integer, db.ForeignKey('photo.id'), primary_key=True)
+    collected = db.relationship('Photo', back_populates='collectors', lazy='joined')
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 @db.event.listens_for(Photo, 'after_delete', named=True)

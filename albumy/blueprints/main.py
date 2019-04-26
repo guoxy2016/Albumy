@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
-from ..models import Photo, Tag, Comment
+from ..models import Photo, Tag, Comment, Collect
 from ..utils import resize_image, flash_errors, redirect_back
 
 main_bp = Blueprint('main', __name__)
@@ -269,3 +269,37 @@ def report_comment(comment_id):
     flash('已举报', 'success')
     return redirect(url_for('.show_photo', photo_id=comment.photo_id))
 
+
+@main_bp.route('/collect/<int:photo_id>', methods=['POST'])
+@login_required
+@confirm_required
+@permission_required('COLLECT')
+def collect(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user.is_collecting(photo):
+        flash('当前图片已经收藏', 'info')
+        return redirect(url_for('.show_photo', photo_id=photo_id))
+    current_user.collect(photo)
+    flash('收藏成功!', 'success')
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/uncollect/<int:photo_id>', methods=['POST'])
+def uncollect(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if not current_user.is_collecting(photo):
+        flash('错误的操作, 图片没有收藏', 'info')
+        return redirect(url_for('.show_photo', photo_id=photo_id))
+    current_user.uncollect(photo)
+    flash('已取消收藏', 'success')
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/collectors')
+def show_collectors(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['ALBUMY_USER_PER_PAGE']
+    pagination = Collect.query.with_parent(photo).order_by(Collect.timestamp.asc()).paginate(page, per_page)
+    collects = pagination.items
+    return render_template('main/collectors.html', collects=collects, photo=photo, pagination=pagination)
