@@ -2,6 +2,7 @@ import os
 
 import click
 from flask import Flask, render_template
+from flask_wtf.csrf import CSRFError
 
 from albumy.fakes import fake_collects
 from .blueprints.auth import auth_bp
@@ -9,7 +10,7 @@ from .blueprints.main import main_bp
 from .blueprints.user import user_bp
 from .blueprints.ajax import ajax_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
-from .models import User, Role, Permission, Photo, Tag, Comment, Collect
+from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow
 
 
 def create_app(config_name=None):
@@ -57,7 +58,8 @@ def register_blueprints(app=None):
 def register_shell_context(app=None):
     @app.shell_context_processor
     def shell_context():
-        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo, Tag=Tag, Comment=Comment, Collect=Collect)
+        return dict(db=db, User=User, Role=Role, Permission=Permission, Photo=Photo, Tag=Tag, Comment=Comment,
+                    Collect=Collect, Follow=Follow)
 
 
 def register_template_context(app=None):
@@ -67,23 +69,23 @@ def register_template_context(app=None):
 def register_errors(app=None):
     @app.errorhandler(400)
     def bad_request(e):
-        return render_template('errors/400.html'), 400
+        return render_template('errors/400.html', description=e.description), 400
 
     @app.errorhandler(403)
     def forbidden(e):
-        return render_template('errors/403.html'), 403
+        return render_template('errors/403.html', description=e.description), 403
 
     @app.errorhandler(404)
     def not_found(e):
-        return render_template('errors/404.html'), 404
+        return render_template('errors/404.html', description=e.description), 404
 
     @app.errorhandler(413)
     def too_large(e):
-        return render_template('errors/413.html'), 413
+        return render_template('errors/413.html', description=e.description), 413
 
     @app.errorhandler(500)
     def server_error(e):
-        return render_template('errors/500.html'), 500
+        return render_template('errors/500.html', description=e.description), 500
 
 
 def register_commends(app=None):

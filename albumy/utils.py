@@ -3,6 +3,7 @@ from urllib.parse import urlparse, urljoin
 
 from PIL import Image
 from flask import request, redirect, url_for, flash, current_app
+from flask_dropzone import random_filename
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
 
 from .extensions import db
@@ -58,9 +59,8 @@ def flash_errors(form):
             flash('`%s`字段提交时出现错误:%s' % (getattr(form, field).label.text, error), 'danger')
 
 
-def resize_image(image, filename, base_width):
+def resize_image(img, filename, base_width):
     filename, ext = os.path.splitext(filename)
-    img = Image.open(image)
     if img.size[0] < base_width:
         return filename + ext
     w_percent = (base_width / float(img.size[0]))
@@ -69,6 +69,21 @@ def resize_image(image, filename, base_width):
     filename += current_app.config['ALBUMY_PHOTO_SUFFIX'][base_width] + ext
     img.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename), optimize=True, quality=85)
     return filename
+
+
+def validate_image(fp):
+    try:
+        filename = random_filename(fp.filename)
+        img = Image.open(fp)
+        fp.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename))
+    except IOError:
+        return None
+    img_m = img.copy()
+    img_s = img.copy()
+    img.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename))
+    filename_m = resize_image(img_m, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
+    filename_s = resize_image(img_s, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
+    return dict(name=filename, name_m=filename_m, name_s=filename_s)
 
 
 # 初始化内容
@@ -97,3 +112,9 @@ def init_photo_flag():
         photo.flag = 0
         db.session.add(photo)
     db.session.commit()
+
+
+def follow_self_all():
+    from .models import User
+    for user in User.query.all():
+        user.follow(user)

@@ -122,4 +122,3 @@ def reset_password(token):
             return redirect(url_for('.forget_password'))
 
     return render_template('auth/reset_password.html', form=form)
-

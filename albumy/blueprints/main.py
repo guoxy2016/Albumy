@@ -1,14 +1,11 @@
-import os
-
 from flask import Blueprint, render_template, request, current_app, send_from_directory, flash, redirect, url_for, abort
-from flask_dropzone import random_filename
 from flask_login import login_required, current_user
 
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
 from ..models import Photo, Tag, Comment, Collect
-from ..utils import resize_image, flash_errors, redirect_back
+from ..utils import flash_errors, redirect_back, validate_image
 
 main_bp = Blueprint('main', __name__)
 
@@ -30,14 +27,13 @@ def explore():
 def upload():
     if request.method == 'POST' and 'file' in request.files:
         f = request.files.get('file')
-        filename = random_filename(f.filename)
-        f.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename))
-        filename_m = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
-        filename_s = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
+        result = validate_image(f)
+        if result is None:
+            return '不支持的图片格式', 400
         photo = Photo(
-            filename=filename,
-            filename_m=filename_m,
-            filename_s=filename_s,
+            filename=result['name'],
+            filename_m=result['name_m'],
+            filename_s=result['name_s'],
             author=current_user._get_current_object()
         )
         db.session.add(photo)
@@ -285,6 +281,7 @@ def collect(photo_id):
 
 
 @main_bp.route('/uncollect/<int:photo_id>', methods=['POST'])
+@login_required
 def uncollect(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     if not current_user.is_collecting(photo):

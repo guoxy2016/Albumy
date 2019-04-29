@@ -17,7 +17,7 @@ class BaseConfig:
     ALBUMY_SEARCH_RESULT_PER_PAGE = 20
     ALBUMY_MAIL_SUBJECT_PREFIX = '[Albumy]'
     ALBUMY_UPLOAD_PATH = os.path.join(basedir, 'uploads')
-    ALBUMY_ALLOW_EXTENSIONS = ['jpg', 'jpeg', 'png', ]
+    ALBUMY_ALLOW_EXTENSIONS = ['jpg', 'jpeg', 'png']
     ALBUMY_PHOTO_SIZE = {
         'small': 400,
         'medium': 800,

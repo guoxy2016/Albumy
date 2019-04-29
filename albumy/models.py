@@ -20,21 +20,25 @@ class User(db.Model, UserMixin):
     location = db.Column(db.String(50))
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
     confirmed = db.Column(db.Boolean, default=False)
+    avatar_s = db.Column(db.String(64))
+    avatar_m = db.Column(db.String(64))
+    avatar_l = db.Column(db.String(64))
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', back_populates='users')
     photos = db.relationship('Photo', back_populates='author', cascade='all')
     comments = db.relationship('Comment', back_populates='author')
     collections = db.relationship('Collect', back_populates='collector', cascade='all')
-
-    avatar_s = db.Column(db.String(64))
-    avatar_m = db.Column(db.String(64))
-    avatar_l = db.Column(db.String(64))
+    following = db.relationship('Follow', back_populates='follower', foreign_keys='[Follow.follower_id]',
+                                cascade='all', lazy='dynamic')
+    followers = db.relationship('Follow', back_populates='followed', foreign_keys='[Follow.followed_id]',
+                                cascade='all', lazy='dynamic')
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
         self.set_role()
         self.generate_avatar()
+        self.follow(self)
 
     def generate_avatar(self):
         avatar = Identicon()
@@ -64,6 +68,26 @@ class User(db.Model, UserMixin):
 
     def is_collecting(self, photo):
         return Collect.query.with_parent(self).filter_by(collected_id=photo.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def is_following(self, user):
+        if user.id is None:
+            return False
+        return self.following.filter_by(followed_id=user.id).first() is not None
+
+    def follow(self, user):
+        if not self.is_following(user):
+            follow = Follow(follower=self, followed=user)
+            db.session.add(follow)
+            db.session.commit()
+
+    def unfollow(self, user):
+        follow = Follow.query.filter(Follow.follower == self, Follow.followed == user).first()
+        if follow:
+            db.session.delete(follow)
+            db.session.commit()
 
     @property
     def is_admin(self):
@@ -185,6 +209,14 @@ class Collect(db.Model):
     collector = db.relationship('User', back_populates='collections', lazy='joined')
     collected_id = db.Column(db.Integer, db.ForeignKey('photo.id'), primary_key=True)
     collected = db.relationship('Photo', back_populates='collectors', lazy='joined')
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Follow(db.Model):
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    follower = db.relationship('User', foreign_keys=[follower_id], back_populates='following', lazy='joined')
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers', lazy='joined')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
