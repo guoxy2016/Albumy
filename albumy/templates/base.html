@@ -97,11 +97,14 @@
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{#    <script src="{{ url_for('static', filename='js/jquery-3.4.0.min.js') }}"></script>#}
+{#    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>#}
     {{ moment.include_moment(local_js=url_for('static', filename='js/moment-with-locales.min.js')) }}
     {{ moment.locale('zh-CN') }}
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script type="text/javascript">
-    var csrf_token="{{ csrf_token() }}"
+        var csrf_token = "{{ csrf_token() }}";
+        var default_error_message = '服务器错误, 请稍后重试!';
     </script>
 {% endblock %}
 </body>

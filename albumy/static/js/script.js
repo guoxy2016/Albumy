@@ -19,6 +19,7 @@ $(function () {
                 success: function (data) {
                     $el.popover({
                         html: true,
+                        container: 'body',
                         content: data,
                         trigger: 'manual',
                         animation: false,
@@ -27,6 +28,7 @@ $(function () {
                     $(".popover").on("mouseleave", function () {
                         setTimeout(function () {
                             $el.popover("hide");
+
                         }, 200);
                     });
                 },
@@ -51,9 +53,14 @@ $(function () {
         }
     }
 
-    function toast(body) {
+    function toast(body, category) {
         clearTimeout(flash);
         var $toast = $('#toast');
+        if (category === 'error') {
+            $toast.css('background-color', 'red')
+        } else {
+            $toast.css('background-color', '#333')
+        }
         $toast.text(body).fadeIn();
         flash = setTimeout(function () {
             $toast.fadeOut();
@@ -71,7 +78,7 @@ $(function () {
                 $el.prev().show();
                 $el.hide();
                 update_followers_count(id);
-                toast('以关注用户');
+                toast(data.message);
             },
             // error: function (error) {
             //     toast('服务器错误, 请稍候重试!');
@@ -90,7 +97,7 @@ $(function () {
                 $el.next().show();
                 $el.hide();
                 update_followers_count(id);
-                toast('已取消关注');
+                toast(data.message);
             },
             // error: function (error) {
             //     toast('服务器错误, 请稍候重试!')
@@ -112,7 +119,27 @@ $(function () {
         });
     }
 
-
+    $(document).ajaxError(function (event, request, settings) {
+        var message = null;
+        if (request.responseJSON && request.responseJSON.hasOwnProperty('message')) {
+            message = request.responseJSON.message;
+        } else if (request.responseText) {
+            var IS_JSON = true;
+            try {
+                var data = JSON.parse(request.responseText);
+            } catch (e) {
+                IS_JSON = flash;
+            }
+            if (IS_JSON && data !== undefined && data.hasOwnProperty('message')) {
+                message = JSON.parse(request.responseText).message;
+            } else {
+                message = default_error_message;
+            }
+        } else {
+            message = default_error_message;
+        }
+        toast(message, 'error')
+    });
     $('#confirm-delete').on('show.bs.modal', function (e) {
         $('.delete-form').attr('action', $(e.relatedTarget).data('href'));
     });

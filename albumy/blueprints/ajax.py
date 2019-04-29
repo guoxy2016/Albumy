@@ -21,7 +21,7 @@ def follow(username):
     if not current_user.can('FOLLOW'):
         return jsonify(message='没有权限'), 403
 
-    user = User.query.filter_by(username=username).get_or_404()
+    user = User.query.filter_by(username=username).first_or_404()
     if current_user.is_following(user):
         return jsonify(message='重复的操作, 以关注用户'), 400
 
@@ -34,7 +34,7 @@ def unfollow(username):
     if not current_user.is_authenticated:
         return jsonify(message='用户未登录'), 403
 
-    user = User.query.filter_by(username=username).get_or_404()
+    user = User.query.filter_by(username=username).first_or_404()
     if not current_user.is_following(user):
         return jsonify(message='无效的操作, 您为关注该用户'), 400
 
@@ -45,7 +45,7 @@ def unfollow(username):
 @ajax_bp.route('/followers-count/<int:user_id>')
 def followers_count(user_id):
     user = User.query.get_or_404(user_id)
-    count = user.followers.count - 1
+    count = user.followers.count() - 1
     return jsonify(count=count)
 
 
