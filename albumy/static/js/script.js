@@ -72,7 +72,7 @@ $(function () {
         var id = $el.data('id');
 
         $.ajax({
-            type: 'post',
+            type: 'POST',
             url: $el.data('href'),
             success: function (data) {
                 $el.prev().show();
@@ -91,7 +91,7 @@ $(function () {
         var id = $el.data('id');
 
         $.ajax({
-            type: 'post',
+            type: 'POST',
             url: $el.data('href'),
             success: function (data) {
                 $el.next().show();
@@ -117,6 +117,22 @@ $(function () {
             //     toast('服务器错误, 请稍候重试!')
             // }
         });
+    }
+
+    function update_notifications_count() {
+        var $el = $('#notification-badge');
+        $.ajax({
+            type: 'GET',
+            url: $el.data('href'),
+            success: function (data) {
+                if (data.count === 0) {
+                    $('#notification-badge').hide();
+                } else {
+                    $el.show();
+                    $el.text(data.count)
+                }
+            }
+        })
     }
 
     $(document).ajaxError(function (event, request, settings) {
@@ -165,4 +181,7 @@ $(function () {
     $("[data-toggle='tooltip']").tooltip({title: moment($(this).data('timestamp')).format('lll')});
     $(document).on('click', '.follow-btn', follow.bind(this));
     $(document).on('click', '.unfollow-btn', unfollow.bind(this));
+    if (is_authenticated) {
+        setInterval(update_notifications_count, 30000);
+    }
 });

@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, current_app, flash, redirect, url_for
 from flask_login import login_required, current_user
 
-from ..utils import redirect_back
 from ..decorators import confirm_required, permission_required
-from ..models import User, Photo, Collect
 from ..extensions import db
+from ..models import User, Photo, Collect
+from ..notifications import push_follow_notification
+from ..utils import redirect_back
 
 user_bp = Blueprint('user', __name__)
 
@@ -40,6 +41,7 @@ def follow(username):
         return redirect(url_for('.index', username=username))
     current_user.follow(user)
     db.session.commit()
+    push_follow_notification(current_user, user)
     flash('关注成功', 'success')
     return redirect_back()
 

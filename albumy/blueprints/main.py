@@ -4,7 +4,8 @@ from flask_login import login_required, current_user
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
-from ..models import Photo, Tag, Comment, Collect
+from ..models import Photo, Tag, Comment, Collect, Notification
+from ..notifications import push_collect_notification, push_commit_notification
 from ..utils import flash_errors, redirect_back, validate_image
 
 main_bp = Blueprint('main', __name__)
@@ -228,6 +229,7 @@ def new_comment(photo_id):
             comment.replied = Comment.query.get_or_404(replied_id)
         db.session.add(comment)
         db.session.commit()
+        push_commit_notification(photo_id, photo.author, page=1)
         flash('已评论', 'success')
         return redirect(url_for('.show_photo', photo_id=photo_id, page=1))
     flash_errors(form)
@@ -276,6 +278,7 @@ def collect(photo_id):
         flash('当前图片已经收藏', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
     current_user.collect(photo)
+    push_collect_notification(current_user, photo_id, photo.author)
     flash('收藏成功!', 'success')
     return redirect(url_for('.show_photo', photo_id=photo_id))
 
@@ -300,3 +303,41 @@ def show_collectors(photo_id):
     pagination = Collect.query.with_parent(photo).order_by(Collect.timestamp.asc()).paginate(page, per_page)
     collects = pagination.items
     return render_template('main/collectors.html', collects=collects, photo=photo, pagination=pagination)
+
+
+@main_bp.route('/notifications')
+@login_required
+def show_notifications():
+    page = request.args.get('page', 1, int)
+    per_page = current_app.config['ALBUMY_NOTIFICATION_PER_PAGE']
+    notifications = Notification.query.with_parent(current_user)
+    filter_rule = request.args.get('filter')
+    if filter_rule == 'unread':
+        notifications = notifications.filter_by(is_read=False)
+    pagination = notifications.order_by(Notification.timestamp.desc()).paginate(page, per_page)
+    notifications = pagination.items
+    return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
+
+
+@main_bp.route('/notifications/read/<int:notification_id>', methods=['POST'])
+@login_required
+def read_notification(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if current_user != notification.receiver:
+        abort(403)
+
+    notification.is_read = True
+    db.session.commit()
+    flash('消息已读', 'success')
+    return redirect_back()
+
+
+@main_bp.route('/notifications/read/all', methods=['POST'])
+@login_required
+def read_all_notification():
+    notifications = Notification.query.with_parent(current_user).all()
+    for notification in notifications:
+        notification.is_read = True
+    db.session.commit()
+    flash('全部消息已读', 'success')
+    return redirect_back()

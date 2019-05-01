@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, jsonify
 from flask_login import current_user
 
-from ..models import User
+from ..models import User, Notification
+from ..notifications import push_follow_notification
 
 ajax_bp = Blueprint('ajax', __name__, )
 
@@ -26,6 +27,7 @@ def follow(username):
         return jsonify(message='重复的操作, 以关注用户'), 400
 
     current_user.follow(user)
+    push_follow_notification(current_user, user)
     return jsonify(message='已关注用户')
 
 
@@ -46,6 +48,14 @@ def unfollow(username):
 def followers_count(user_id):
     user = User.query.get_or_404(user_id)
     count = user.followers.count() - 1
+    return jsonify(count=count)
+
+
+@ajax_bp.route('/notifications-count')
+def notifications_count():
+    if not current_user.is_authenticated:
+        return jsonify(message='用户未登录'), 403
+    count = Notification.query.with_parent(current_user).filter_by(is_read=False).count()
     return jsonify(count=count)
 
 

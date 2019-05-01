@@ -2,15 +2,15 @@ import os
 
 import click
 from flask import Flask, render_template
-from flask_wtf.csrf import CSRFError
+from flask_login import current_user
 
 from albumy.fakes import fake_collects
+from .blueprints.ajax import ajax_bp
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
-from .blueprints.ajax import ajax_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
-from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow
+from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow, Notification
 
 
 def create_app(config_name=None):
@@ -63,7 +63,13 @@ def register_shell_context(app=None):
 
 
 def register_template_context(app=None):
-    pass
+    @app.context_processor
+    def make_template_context():
+        if current_user.is_authenticated:
+            notification_count = Notification.query.with_parent(current_user).filter_by(is_read=False).count()
+        else:
+            notification_count = None
+        return dict(notification_count=notification_count)
 
 
 def register_errors(app=None):

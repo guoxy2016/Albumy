@@ -33,6 +33,7 @@ class User(db.Model, UserMixin):
                                 cascade='all', lazy='dynamic')
     followers = db.relationship('Follow', back_populates='followed', foreign_keys='[Follow.followed_id]',
                                 cascade='all', lazy='dynamic')
+    notifications = db.relationship('Notification', back_populates='receiver', cascade='all')
 
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
@@ -218,6 +219,15 @@ class Follow(db.Model):
     followed_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     followed = db.relationship('User', foreign_keys=[followed_id], back_populates='followers', lazy='joined')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.Text)
+    is_read = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    receiver = db.relationship('User', back_populates='notifications')
 
 
 @db.event.listens_for(Photo, 'after_delete', named=True)
