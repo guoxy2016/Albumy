@@ -43,19 +43,29 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'), Email('Email邮件格式错误')])
+    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
+                                             Email('Email邮件格式错误')])
     password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
     remember = BooleanField('记住我')
     submit = SubmitField('登陆')
 
 
+class ReLoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
+                                             Email('Email邮件格式错误')])
+    password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
+    submit = SubmitField('登陆')
+
+
 class ForgetPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'), Email('错误的email地址')])
+    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
+                                             Email('错误的email地址')])
     submit = SubmitField('发送')
 
 
 class ResetPasswordForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'), Email('错误的email地址')])
+    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
+                                             Email('错误的email地址')])
     password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
     password2 = PasswordField('确认密码', validators=[
         DataRequired('请输入内容, 不能以空格开头'),

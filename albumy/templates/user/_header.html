@@ -18,10 +18,12 @@
             {% if user.location %}
                 <span class="oi oi-map-marker"></span>
                 <a href="https://www.google.com/maps?q={{ user.location }}"
-                   target="_blank">{{ user.location|truncate(20) }}</a>&nbsp;&nbsp;
-            {% endif %}
+                   target="_blank">{{ user.location|truncate(20) }}</a>
+            {% endif %}<br>
+            <span class="oi oi-envelope-closed"></span>
+            <a href="mailto:{{ user.email }}">{{ user.email }}</a>&nbsp;&nbsp;
             <span class="oi oi-calendar"></span>
-            {{ moment(user.member_since).format('LL') }} 加入
+            {{ moment(user.member_since).format('LL') }}加入<br>
         </p>
     </div>
 </div>

@@ -1,9 +1,9 @@
 from flask import Blueprint, flash, redirect, url_for, render_template, request
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user, login_fresh, confirm_login
 
 from ..emails import send_confirm_email, send_reset_password_email
 from ..extensions import db
-from ..forms.auth import RegisterForm, LoginForm, ForgetPasswordForm, ResetPasswordForm
+from ..forms.auth import RegisterForm, LoginForm, ForgetPasswordForm, ResetPasswordForm, ReLoginForm
 from ..models import User
 from ..settings import Operations
 from ..utils import generate_token, validate_token, redirect_back
@@ -122,3 +122,17 @@ def reset_password(token):
             return redirect(url_for('.forget_password'))
 
     return render_template('auth/reset_password.html', form=form)
+
+
+@auth_bp.route('re-authenticate', methods=['GET', 'POST'])
+@login_required
+def re_authenticate():
+    if login_fresh():
+        return redirect(url_for('main.index'))
+    form = ReLoginForm()
+    if form.validate_on_submit():
+        if current_user.email == form.email.data and current_user.validate_password(form.password.data):
+            confirm_login()
+            return redirect_back()
+        flash('邮箱地址或密码错误, 请重新输入', 'warning')
+    return render_template('auth/login.html', form=form)

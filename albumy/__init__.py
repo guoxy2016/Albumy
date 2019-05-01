@@ -4,7 +4,6 @@ import click
 from flask import Flask, render_template
 from flask_login import current_user
 
-from albumy.fakes import fake_collects
 from .blueprints.ajax import ajax_bp
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
@@ -125,7 +124,7 @@ def register_commends(app=None):
     @click.option('--collect', default=50, help='Quality of collect, default is 50')
     def forge(user, photo, tag, comment, collect):
         """Generate fake data"""
-        from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments
+        from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments, fake_collects
 
         db.drop_all()
         db.create_all()

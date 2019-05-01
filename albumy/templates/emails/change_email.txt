@@ -1,0 +1,7 @@
+你好{{ user.name }},
+
+请点击下方的连接验证你的邮箱:
+    {{ url_for('user.change_email', token=token, _external=True) }}
+
+
+(这封邮件由系统自动发送, 请勿回复!)

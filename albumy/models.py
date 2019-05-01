@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     location = db.Column(db.String(50))
     member_since = db.Column(db.DateTime, default=datetime.utcnow)
     confirmed = db.Column(db.Boolean, default=False)
+    avatar_raw = db.Column(db.String(64))
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))
     avatar_l = db.Column(db.String(64))
@@ -238,3 +239,31 @@ def delete_photos(**kwargs):
             path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
             if os.path.exists(path):
                 os.remove(path)
+
+
+@db.event.listens_for(User.avatar_raw, 'set')
+def change_avatar(target, value, oldvalue, initiator):
+    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+@db.event.listens_for(User.avatar_s, 'set')
+def change_avatar(target, value, oldvalue, initiator):
+    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+@db.event.listens_for(User.avatar_m, 'set')
+def change_avatar(target, value, oldvalue, initiator):
+    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+@db.event.listens_for(User.avatar_l, 'set')
+def change_avatar(target, value, oldvalue, initiator):
+    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+    if os.path.exists(path):
+        os.remove(path)

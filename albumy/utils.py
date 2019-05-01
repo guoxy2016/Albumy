@@ -7,6 +7,7 @@ from flask_dropzone import random_filename
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, SignatureExpired, BadSignature
 
 from .extensions import db
+from .models import User
 from .settings import Operations
 
 
@@ -46,6 +47,13 @@ def validate_token(token, user, operation, password=None):
         user.confirmed = True
     elif operation == Operations.RESET_PASSWORD:
         user.password = password
+    elif operation == Operations.CHANGE_EMAIL:
+        new_email = data.get('new_email')
+        if new_email is None:
+            return False
+        if User.query.filter_by(email=new_email).first() is not None:
+            return False
+        user.email = new_email
     else:
         return False
 

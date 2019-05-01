@@ -62,6 +62,15 @@
                                    href="{{ url_for('user.index', username=current_user.username) }}">
                                     <span class="oi oi-person"></span> 我的主页
                                 </a>
+                                <a class="dropdown-item" href="{{ url_for('user.edit_profile') }}">
+                                    <span class="oi oi-cog"></span> 个人设置
+                                </a>
+                                {% if current_user.can('MODERATE') %}
+                                                                {# TODO 控制面板的href #}
+                                    <a class="dropdown-item" href="#">
+                                        <span class="oi oi-dashboard"></span> 控制面板
+                                    </a>
+                                {% endif %}
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ url_for('auth.logout', next=request.full_path) }}">
                                     <span class="oi oi-power-standby"></span> 退出

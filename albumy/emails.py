@@ -27,3 +27,7 @@ def send_confirm_email(user, token, to=None):
 
 def send_reset_password_email(user, token, to=None):
     send_email('重置密码', to or user.email, template='emails/reset_password', user=user, token=token)
+
+
+def send_change_email(user, token, to=None):
+    send_email('修改邮箱', to or user.email, template='emails/change_email', user=user, token=token)
