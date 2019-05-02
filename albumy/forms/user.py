@@ -1,7 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, TextAreaField, SubmitField, HiddenField, PasswordField
+from wtforms import StringField, TextAreaField, SubmitField, HiddenField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Optional, Length, ValidationError, Regexp, InputRequired, EqualTo, Email
 
 from ..models import User
@@ -55,3 +55,24 @@ class ChangeEmailForm(FlaskForm):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data.lower()).first() is not None:
             raise ValidationError('Email已被注册, 请换一个试试.')
+
+
+class NotificationSettingForm(FlaskForm):
+    receive_comment_notification = BooleanField('新评论')
+    receive_follow_notification = BooleanField('新关注')
+    receive_collect_notification = BooleanField('新收藏')
+    submit = SubmitField('保存')
+
+
+class PrivacySettingForm(FlaskForm):
+    public_collections = BooleanField('公开个人收藏夹')
+    submit = SubmitField('保存')
+
+
+class DeleteAccountForm(FlaskForm):
+    username = StringField('用户名', validators=[DataRequired(), Length(1, 20)])
+    submit = SubmitField('提交')
+
+    def validate_username(self, field):
+        if field.data != current_user.username:
+            raise ValidationError('用户名错误')

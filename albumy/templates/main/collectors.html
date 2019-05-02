@@ -2,6 +2,8 @@
 {% from 'bootstrap/pagination.html' import render_pagination %}
 {% from '_macros.html' import user_card with context %}
 
+{% block title %}图片收藏{% endblock %}
+
 {% block content %}
     <div class="page-header">
         <div class="row">
@@ -14,9 +16,11 @@
     </div>
     <div class="row">
         <div class="col-md-12">
-            <h3>{{ photo.collectors|length }} Collectors</h3>
+            <h3>共{{ photo.collectors|length }}个人收藏</h3>
             {% for collect in collects %}
-                {{ user_card(user=collect.collector) }}
+                {% if collect.collector.public_collections %}
+                    {{ user_card(user=collect.collector) }}
+                {% endif %}
             {% endfor %}
         </div>
     </div>

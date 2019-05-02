@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% from 'bootstrap/pagination.html' import render_pagination %}
-{% from '_macros.html' import photo_card with context%}
+{% from '_macros.html' import photo_card with context %}
 
 {% block title %}{{ user.name }}{% endblock %}
 
@@ -8,14 +8,19 @@
     {% include 'user/_header.html' %}
     <div class="row">
         <div class="col-md-12">
-{#        如果用户公开他的收藏夹#}
-            {% if collects %}
-                {% for collect in collects %}
-                    {{ photo_card(collect.collected) }}
-                {% endfor %}
+            {% if user.public_collections or current_user == user %}
+                {% if collects %}
+                    {% for collect in collects %}
+                        {{ photo_card(collect.collected) }}
+                    {% endfor %}
+                {% else %}
+                    <div class="tip">
+                        <h3>没有收藏图片</h3>
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="tip">
-                    <h3>没有收藏图片</h3>
+                    <h3>当前用户没有公开他的收藏夹</h3>
                 </div>
             {% endif %}
         </div>

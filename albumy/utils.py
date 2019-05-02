@@ -126,3 +126,19 @@ def follow_self_all():
     from .models import User
     for user in User.query.all():
         user.follow(user)
+
+
+def init_user_notification():
+    from .models import User
+    for user in User.query.all():
+        user.receive_follow_notification = True
+        user.receive_collect_notification = True
+        user.receive_comment_notification = True
+    db.session.commit()
+
+
+def init_user_privacy():
+    from .models import User
+    for user in User.query.all():
+        user.public_collections = True
+    db.session.commit()

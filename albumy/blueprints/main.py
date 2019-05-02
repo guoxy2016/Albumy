@@ -229,7 +229,8 @@ def new_comment(photo_id):
             comment.replied = Comment.query.get_or_404(replied_id)
         db.session.add(comment)
         db.session.commit()
-        push_commit_notification(photo_id, photo.author, page=1)
+        if photo.author.receive_comment_notification:
+            push_commit_notification(photo_id, photo.author, page=1)
         flash('已评论', 'success')
         return redirect(url_for('.show_photo', photo_id=photo_id, page=1))
     flash_errors(form)
@@ -278,7 +279,8 @@ def collect(photo_id):
         flash('当前图片已经收藏', 'info')
         return redirect(url_for('.show_photo', photo_id=photo_id))
     current_user.collect(photo)
-    push_collect_notification(current_user, photo_id, photo.author)
+    if photo.author.receive_collect_notification:
+        push_collect_notification(current_user, photo_id, photo.author)
     flash('收藏成功!', 'success')
     return redirect(url_for('.show_photo', photo_id=photo_id))
 

@@ -27,7 +27,8 @@ def follow(username):
         return jsonify(message='重复的操作, 以关注用户'), 400
 
     current_user.follow(user)
-    push_follow_notification(current_user, user)
+    if user.receive_follow_notification:
+        push_follow_notification(current_user, user)
     return jsonify(message='已关注用户')
 
 

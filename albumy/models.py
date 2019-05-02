@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import current_app
 from flask_avatars import Identicon
 from flask_login import UserMixin
+from sqlalchemy.util import symbol
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .extensions import db
@@ -24,6 +25,10 @@ class User(db.Model, UserMixin):
     avatar_s = db.Column(db.String(64))
     avatar_m = db.Column(db.String(64))
     avatar_l = db.Column(db.String(64))
+    receive_comment_notification = db.Column(db.Boolean, default=True)
+    receive_follow_notification = db.Column(db.Boolean, default=True)
+    receive_collect_notification = db.Column(db.Boolean, default=True)
+    public_collections = db.Column(db.Boolean, default=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', back_populates='users')
@@ -231,9 +236,8 @@ class Notification(db.Model):
     receiver = db.relationship('User', back_populates='notifications')
 
 
-@db.event.listens_for(Photo, 'after_delete', named=True)
-def delete_photos(**kwargs):
-    target = kwargs['target']
+@db.event.listens_for(Photo, 'after_delete')
+def delete_photos(mapper, connection, target):
     for filename in [target.filename, target.filename_s, target.filename_m]:
         if filename is not None:
             path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
@@ -243,27 +247,40 @@ def delete_photos(**kwargs):
 
 @db.event.listens_for(User.avatar_raw, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
-    if os.path.exists(path):
-        os.remove(path)
+    if symbol('NO_VALUE') != oldvalue:
+        path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+        if os.path.exists(path):
+            os.remove(path)
 
 
 @db.event.listens_for(User.avatar_s, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
-    if os.path.exists(path):
-        os.remove(path)
+    if symbol('NO_VALUE') != oldvalue:
+        path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+        if os.path.exists(path):
+            os.remove(path)
 
 
 @db.event.listens_for(User.avatar_m, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
-    if os.path.exists(path):
-        os.remove(path)
+    if symbol('NO_VALUE') != oldvalue:
+        path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+        if os.path.exists(path):
+            os.remove(path)
 
 
 @db.event.listens_for(User.avatar_l, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
-    if os.path.exists(path):
-        os.remove(path)
+    if symbol('NO_VALUE') != oldvalue:
+        path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
+        if os.path.exists(path):
+            os.remove(path)
+
+
+@db.event.listens_for(User, 'after_delete')
+def delete_user(mapper, connection, target):
+    for filename in [target.avatar_s, target.avatar_m, target.avatar_l, target.avatar_raw]:
+        if filename is not None:
+            path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], filename)
+            if os.path.exists(path):
+                os.remove(path)

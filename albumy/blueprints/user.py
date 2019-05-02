@@ -4,7 +4,8 @@ from flask_login import login_required, current_user, fresh_login_required
 from ..decorators import confirm_required, permission_required
 from ..emails import send_change_email
 from ..extensions import db, avatars
-from ..forms.user import EditProfileForm, UploadAvatarForm, CropAvatarForm, ChangePasswordForm, ChangeEmailForm
+from ..forms.user import EditProfileForm, UploadAvatarForm, CropAvatarForm, ChangePasswordForm, ChangeEmailForm, \
+    NotificationSettingForm, PrivacySettingForm, DeleteAccountForm
 from ..models import User, Photo, Collect
 from ..notifications import push_follow_notification
 from ..settings import Operations
@@ -44,7 +45,8 @@ def follow(username):
         return redirect(url_for('.index', username=username))
     current_user.follow(user)
     db.session.commit()
-    push_follow_notification(current_user, user)
+    if user.receive_follow_notification:
+        push_follow_notification(current_user, user)
     flash('关注成功', 'success')
     return redirect_back()
 
@@ -114,7 +116,7 @@ def change_avatar():
     return render_template('user/settings/change_avatar.html', upload_form=upload_form, crop_from=crop_from)
 
 
-@user_bp.route('/setting/avatar/upload', methods=['POST'])
+@user_bp.route('/settings/avatar/upload', methods=['POST'])
 @login_required
 @confirm_required
 def upload_avatar():
@@ -129,7 +131,7 @@ def upload_avatar():
     return redirect(url_for('.change_avatar'))
 
 
-@user_bp.route('/setting/avatar/crop', methods=['POST'])
+@user_bp.route('/settings/avatar/crop', methods=['POST'])
 @login_required
 @confirm_required
 def crop_avatar():
@@ -150,7 +152,7 @@ def crop_avatar():
     return redirect(url_for('.change_avatar'))
 
 
-@user_bp.route('/setting/change-password', methods=['GET', 'POST'])
+@user_bp.route('/settings/change-password', methods=['GET', 'POST'])
 @fresh_login_required
 def change_password():
     form = ChangePasswordForm()
@@ -164,7 +166,7 @@ def change_password():
     return render_template('user/settings/change_password.html', form=form)
 
 
-@user_bp.route('/setting/change-email', methods=['GET', 'POST'])
+@user_bp.route('/settings/change-email', methods=['GET', 'POST'])
 @login_required
 def change_email_request():
     form = ChangeEmailForm()
@@ -185,3 +187,45 @@ def change_email(token):
     else:
         flash('链接失效, 请重新设置', 'danger')
         return redirect(url_for('.change_email_request'))
+
+
+@user_bp.route('/settings/notification', methods=['GET', 'POST'])
+@login_required
+def notification_setting():
+    form = NotificationSettingForm()
+    if form.validate_on_submit():
+        current_user.receive_collect_notification = form.receive_collect_notification.data
+        current_user.receive_follow_notification = form.receive_follow_notification.data
+        current_user.receive_comment_notification = form.receive_comment_notification.data
+        db.session.commit()
+        flash('消息提醒设置保存成功', 'success')
+        return redirect(url_for('.index', username=current_user.username))
+    form.receive_comment_notification.data = current_user.receive_comment_notification
+    form.receive_follow_notification.data = current_user.receive_follow_notification
+    form.receive_collect_notification.data = current_user.receive_collect_notification
+    return render_template('user/settings/edit_notification.html', form=form)
+
+
+@user_bp.route('/settings/privacy', methods=['GET', 'POST'])
+@login_required
+def privacy_setting():
+    form = PrivacySettingForm()
+    if form.validate_on_submit():
+        current_user.public_collections = form.public_collections.data
+        db.session.commit()
+        flash('隐私设置保存成功', 'success')
+        return redirect(url_for('.index', username=current_user.username))
+    form.public_collections.data = current_user.public_collections
+    return render_template('user/settings/edit_privacy.html', form=form)
+
+
+@user_bp.route('/settings/account/delete', methods=['GET', 'POST'])
+@fresh_login_required
+def delete_account():
+    form = DeleteAccountForm()
+    if form.validate_on_submit():
+        db.session.delete(current_user._get_current_object())
+        db.session.commit()
+        flash('你自由啦, 哈哈哈! 再见', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('user/settings/delete_account.html', form=form)
