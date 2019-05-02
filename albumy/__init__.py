@@ -119,12 +119,13 @@ def register_commends(app=None):
     @app.cli.command()
     @click.option('--user', default=6, help='Quantity of users, default is 6')
     @click.option('--photo', default=30, help='Quantity of photo, default is 30')
-    @click.option('--tag', default=20, help='quality of tag, default is 20')
+    @click.option('--tag', default=20, help='Quality of tag, default is 20')
     @click.option('--comment', default=100, help='Quality of comment, default is 100')
     @click.option('--collect', default=50, help='Quality of collect, default is 50')
-    def forge(user, photo, tag, comment, collect):
+    @click.option('--follow', default=20, help='Quality of follow, default is 20')
+    def forge(user, photo, tag, comment, collect, follow):
         """Generate fake data"""
-        from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments, fake_collects
+        from .fakes import fake_admin, fake_users, fake_tags, fake_photos, fake_comments, fake_collects, fake_follow
 
         db.drop_all()
         db.create_all()
@@ -149,5 +150,8 @@ def register_commends(app=None):
 
         click.echo('Generating %d collects...' % collect)
         fake_collects(count=collect)
+
+        click.echo('Generating %d follows...' % follow)
+        fake_follow(count=follow)
 
         click.echo('Done!')

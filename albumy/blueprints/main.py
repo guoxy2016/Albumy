@@ -191,7 +191,7 @@ def show_tag(tag_id, order):
 
     if order == 'by_collects':
         order_rule = '收藏量'
-        photos.sort(lambda x: len(x.collectors), reverse=True)
+        photos.sort(key=lambda x: len(x.collectors), reverse=True)
     return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
 
 
