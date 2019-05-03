@@ -1,5 +1,6 @@
 from flask_avatars import Avatars
 from flask_bootstrap import Bootstrap
+from flask_debugtoolbar import DebugToolbarExtension
 from flask_dropzone import Dropzone
 from flask_login import LoginManager, AnonymousUserMixin
 from flask_mail import Mail
@@ -25,6 +26,7 @@ moment = Moment()
 dropzone = Dropzone()
 csrf = CSRFProtect()
 avatars = Avatars()
+toolbar = DebugToolbarExtension()
 
 
 @login_manager.user_loader
@@ -50,4 +52,3 @@ login_manager.login_message_category = 'warning'
 login_manager.refresh_view = 'auth.re_authenticate'
 login_manager.needs_refresh_message = '为了保护您的帐户安全安, 请重新登陆'
 login_manager.needs_refresh_message_category = 'warning'
-

@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
-from ..models import Photo, Tag, Comment, Collect, Notification
+from ..models import Photo, Tag, Comment, Collect, Notification, Follow
 from ..notifications import push_collect_notification, push_commit_notification
 from ..utils import flash_errors, redirect_back, validate_image
 
@@ -13,12 +13,30 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    return render_template('main/index.html')
+    if current_user.is_authenticated:
+        page = request.args.get('page', 1, int)
+        per_page = current_app.config['ALBUMY_PHOTO_PER_PAGE']
+        pagination = Photo.query.\
+            join(Follow, Follow.followed_id == Photo.author_id).\
+            filter(Follow.follower_id == current_user.id).\
+            order_by(Photo.timestamp.desc()).\
+            paginate(page, per_page)
+        photos = pagination.items
+        # followed_ids = db.session.query(Follow.followed_id).filter(Follow.follower_id == current_user.id).subquery()
+        # pagination_ = Photo.query.filter(Photo.author_id.in_(followed_ids)).order_by(Photo.timestamp.desc()).paginate(page, per_page)
+        # photos_ = pagination_.items
+        # print(photos_, photos, sep='\n')
+    else:
+        pagination = None
+        photos = None
+    tags = Tag.query.join(Tag.photos).group_by(Tag.id).order_by(db.func.count().desc()).limit(10)
+    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags)
 
 
 @main_bp.route('/explore')
 def explore():
-    return render_template('main/explore.html')
+    photos = Photo.query.order_by(db.func.random()).limit(12)
+    return render_template('main/explore.html', photos=photos)
 
 
 @main_bp.route('/upload', methods=['GET', 'POST'])

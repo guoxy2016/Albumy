@@ -8,7 +8,7 @@ from .blueprints.ajax import ajax_bp
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
-from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars
+from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars, toolbar
 from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow, Notification
 
 
@@ -45,6 +45,7 @@ def register_extensions(app=None):
     dropzone.init_app(app)
     csrf.init_app(app)
     avatars.init_app(app)
+    toolbar.init_app(app)
 
 
 def register_blueprints(app=None):

@@ -135,6 +135,53 @@ $(function () {
         })
     }
 
+    function update_collectors_count(id) {
+        var $el = $('#collectors-count-' + id);
+        $.ajax({
+            tpye: 'GET',
+            url: $el.data('href'),
+            success: function (data) {
+                console.log(data);
+                $el.text(data.count);
+            }
+        })
+
+    }
+
+    function collect(e) {
+        var $el = $(e.target);
+        var id = $el.data('id');
+
+        $.ajax({
+            type: 'POST',
+            url: $el.data('href'),
+            success: function (data) {
+                $el.prev().show();
+                $el.hide();
+                update_collectors_count(id)
+                toast(data.message)
+            }
+        })
+
+    }
+
+    function uncollect(e) {
+        var $el = $(e.target);
+        var id = $el.data('id');
+
+        $.ajax({
+            type: 'POST',
+            url: $el.data('href'),
+            success: function (data) {
+                $el.next().show();
+                $el.hide();
+                update_collectors_count(id);
+                toast(data.message);
+            }
+        })
+
+    }
+
     $(document).ajaxError(function (event, request, settings) {
         var message = null;
         if (request.responseJSON && request.responseJSON.hasOwnProperty('message')) {
@@ -181,6 +228,8 @@ $(function () {
     $("[data-toggle='tooltip']").tooltip({title: moment($(this).data('timestamp')).format('lll')});
     $(document).on('click', '.follow-btn', follow.bind(this));
     $(document).on('click', '.unfollow-btn', unfollow.bind(this));
+    $(document).on('click', '.collect-btn', collect.bind(this));
+    $(document).on('click', '.uncollect-btn', uncollect.bind(this));
     if (is_authenticated) {
         setInterval(update_notifications_count, 30000);
     }
