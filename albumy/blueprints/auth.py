@@ -46,9 +46,12 @@ def login():
         password = form.password.data
         user = User.query.filter_by(email=email).first()
         if user is not None and user.validate_password(password):
-            login_user(user, remember=form.remember.data)
-            flash('欢迎回来!', 'success')
-            return redirect_back()
+            if login_user(user, remember=form.remember.data):
+                flash('欢迎回来!', 'success')
+                return redirect_back()
+            else:
+                flash('帐户被封禁了', 'warning')
+                return redirect('main.index')
         flash('用户名或密码错误', 'warning')
     return render_template('auth/login.html', form=form)
 

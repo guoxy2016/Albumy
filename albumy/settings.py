@@ -14,7 +14,7 @@ class BaseConfig:
     ALBUMY_MANAGE_USER_PER_PAGE = 30
     ALBUMY_MANAGE_TAG_PER_PAGE = 50
     ALBUMY_MANAGE_COMMENT_PER_PAGE = 30
-    ALBUMY_SEARCH_RESULT_PER_PAGE = 20
+    ALBUMY_SEARCH_RESULT_PER_PAGE = 15
     ALBUMY_MAIL_SUBJECT_PREFIX = '[Albumy]'
     ALBUMY_UPLOAD_PATH = os.path.join(basedir, 'uploads')
     ALBUMY_ALLOW_EXTENSIONS = ['jpg', 'jpeg', 'png']
@@ -55,6 +55,7 @@ class BaseConfig:
     AVATARS_SIZE_TUPLE = (30, 100, 200)
 
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    WHOOSHEE_MIN_STRING_LEN = 1
 
 
 class Development(BaseConfig):

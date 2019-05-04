@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from ..decorators import confirm_required, permission_required
 from ..extensions import db
 from ..forms.main import DescriptionForm, TagForm, CommentForm
-from ..models import Photo, Tag, Comment, Collect, Notification, Follow
+from ..models import Photo, Tag, Comment, Collect, Notification, Follow, User
 from ..notifications import push_collect_notification, push_commit_notification
 from ..utils import flash_errors, redirect_back, validate_image
 
@@ -16,16 +16,12 @@ def index():
     if current_user.is_authenticated:
         page = request.args.get('page', 1, int)
         per_page = current_app.config['ALBUMY_PHOTO_PER_PAGE']
-        pagination = Photo.query.\
-            join(Follow, Follow.followed_id == Photo.author_id).\
-            filter(Follow.follower_id == current_user.id).\
-            order_by(Photo.timestamp.desc()).\
+        pagination = Photo.query. \
+            join(Follow, Follow.followed_id == Photo.author_id). \
+            filter(Follow.follower_id == current_user.id). \
+            order_by(Photo.timestamp.desc()). \
             paginate(page, per_page)
         photos = pagination.items
-        # followed_ids = db.session.query(Follow.followed_id).filter(Follow.follower_id == current_user.id).subquery()
-        # pagination_ = Photo.query.filter(Photo.author_id.in_(followed_ids)).order_by(Photo.timestamp.desc()).paginate(page, per_page)
-        # photos_ = pagination_.items
-        # print(photos_, photos, sep='\n')
     else:
         pagination = None
         photos = None
@@ -114,7 +110,7 @@ def photo_prev(photo_id):
 @login_required
 def delete_photo(photo_id):
     photo = Photo.query.get_or_404(photo_id)
-    if current_user != photo.author:
+    if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
     db.session.delete(photo)
     db.session.commit()
@@ -183,7 +179,7 @@ def new_tag(photo_id):
 def delete_tag(photo_id, tag_id):
     tag = Tag.query.get_or_404(tag_id)
     photo = Photo.query.get_or_404(photo_id)
-    if current_user != photo.author:
+    if current_user != photo.author and not current_user.can('MODERATE'):
         abort(403)
 
     photo.tags.remove(tag)
@@ -268,7 +264,7 @@ def reply_comment(comment_id):
 @login_required
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
-    if current_user != comment.author and current_user != comment.photo.author:
+    if current_user != comment.author and current_user != comment.photo.author and not current_user.can('MODERATE'):
         abort(403)
     db.session.delete(comment)
     db.session.commit()
@@ -361,3 +357,23 @@ def read_all_notification():
     db.session.commit()
     flash('全部消息已读', 'success')
     return redirect_back()
+
+
+@main_bp.route('/search')
+def search():
+    q = request.args.get('q', '')
+    if q == '':
+        flash('请输入要查询的图片, 用户或标签', 'warning')
+        return redirect_back()
+
+    category = request.args.get('category', 'photo')
+    page = request.args.get('page', 1, int)
+    per_page = current_app.config['ALBUMY_SEARCH_RESULT_PER_PAGE']
+    if category == 'user':
+        pagination = User.query.whooshee_search(q).paginate(page, per_page)
+    elif category == 'tag':
+        pagination = Tag.query.whooshee_search(q).paginate(page, per_page)
+    else:
+        pagination = Photo.query.whooshee_search(q).paginate(page, per_page)
+    results = pagination.items
+    return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)

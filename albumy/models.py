@@ -7,9 +7,10 @@ from flask_login import UserMixin
 from sqlalchemy.util import symbol
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .extensions import db
+from .extensions import db, whooshee
 
 
+@whooshee.register_model('name', 'username')
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30))
@@ -29,6 +30,8 @@ class User(db.Model, UserMixin):
     receive_follow_notification = db.Column(db.Boolean, default=True)
     receive_collect_notification = db.Column(db.Boolean, default=True)
     public_collections = db.Column(db.Boolean, default=True)
+    locked = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', back_populates='users')
@@ -96,6 +99,30 @@ class User(db.Model, UserMixin):
             db.session.delete(follow)
             db.session.commit()
 
+    def lock(self):
+        if not self.is_admin:
+            self.locked = True
+            self.role = Role.query.filter_by(name='Locked').first()
+            db.session.commti()
+
+    def unlock(self):
+        self.locked = False
+        self.role = Role.query.filter_by(name='User').first()
+        db.session.commit()
+
+    @property
+    def is_active(self):
+        return self.active
+
+    def block(self):
+        if not self.is_admin:
+            self.active = False
+            db.session.commit()
+
+    def unblock(self):
+        self.active = True
+        db.session.commit()
+
     @property
     def is_admin(self):
         return self.role.name == 'Administrator'
@@ -122,24 +149,26 @@ class User(db.Model, UserMixin):
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
+    level = db.Column(db.Integer)
     permissions = db.relationship('Permission', back_populates='roles', secondary='roles_permissions')
     users = db.relationship('User', back_populates='role')
 
     @staticmethod
     def init_role():
         roles_permissions_map = {
-            'Locked': ['FOLLOW', 'COLLECT'],
-            'User': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'],
-            'Moderator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'],
-            'Administrator': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER']
+            'Locked': {'permissions': ['FOLLOW', 'COLLECT'], 'level': 100},
+            'User': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'], 'level': 100},
+            'Moderator': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'], 'level': 1},
+            'Administrator': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
+                              'level': 0}
         }
         for role_name in roles_permissions_map:
             role = Role.query.filter_by(name=role_name).first()
             if role is None:
-                role = Role(name=role_name)
+                role = Role(name=role_name, level=roles_permissions_map[role_name]['level'])
                 db.session.add(role)
             role.permissions = []
-            for permission_name in roles_permissions_map[role_name]:
+            for permission_name in roles_permissions_map[role_name]['permissions']:
                 permission = Permission.query.filter_by(name=permission_name).first()
                 if permission is None:
                     permission = Permission(name=permission_name)
@@ -165,6 +194,7 @@ roles_permissions = db.Table('roles_permissions',
                              db.Column('permission_id', db.Integer, db.ForeignKey('permission.id')))
 
 
+@whooshee.register_model('description')
 class Photo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(64))
@@ -182,6 +212,7 @@ class Photo(db.Model):
     collectors = db.relationship('Collect', back_populates='collected', cascade='all')
 
 
+@whooshee.register_model('name')
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), index=True)

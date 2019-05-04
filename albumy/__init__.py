@@ -8,7 +8,8 @@ from .blueprints.ajax import ajax_bp
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
-from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars, toolbar
+from .blueprints.admin import admin_bp
+from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars, toolbar, whooshee
 from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow, Notification
 
 
@@ -46,6 +47,7 @@ def register_extensions(app=None):
     csrf.init_app(app)
     avatars.init_app(app)
     toolbar.init_app(app)
+    whooshee.init_app(app)
 
 
 def register_blueprints(app=None):
@@ -53,6 +55,7 @@ def register_blueprints(app=None):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(ajax_bp, url_prefix='/ajax')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
 
 def register_shell_context(app=None):

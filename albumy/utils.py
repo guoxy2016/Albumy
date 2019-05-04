@@ -142,3 +142,11 @@ def init_user_privacy():
     for user in User.query.all():
         user.public_collections = True
     db.session.commit()
+
+
+def init_user_active_lock():
+    from .models import User
+    for user in User.query.all():
+        user.active = True
+        user.locked = False
+    db.session.commit()

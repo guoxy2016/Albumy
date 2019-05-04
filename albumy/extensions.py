@@ -7,6 +7,7 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_whooshee import Whooshee
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import MetaData
 
@@ -27,6 +28,7 @@ dropzone = Dropzone()
 csrf = CSRFProtect()
 avatars = Avatars()
 toolbar = DebugToolbarExtension()
+whooshee = Whooshee()
 
 
 @login_manager.user_loader
