@@ -27,7 +27,7 @@
             {{ moment(user.member_since).format('LL') }}加入<br>
         </p>
         <div>
-            {% if current_user != user and current_user.role.level < user.role.level%}
+            {% if current_user.is_authenticated and current_user != user and current_user.role.level < user.role.level%}
                 {% if current_user.can('MODERATE') %}
                     {% if user.locked %}
                         <form class="inline" action="{{ url_for('admin.unlock_user', user_id=user.id) }}" method="post">

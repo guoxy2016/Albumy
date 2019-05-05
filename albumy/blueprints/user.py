@@ -18,7 +18,7 @@ user_bp = Blueprint('user', __name__)
 def index(username):
     user = User.query.filter_by(username=username).first_or_404()
     if user.locked:
-        flash('你的帐户被锁定了.', 'danger')
+        flash('该帐户被锁定了.', 'danger')
     if user == current_user and not user.active:
         logout_user()
     page = request.args.get('page', 1, int)

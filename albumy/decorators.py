@@ -30,4 +30,4 @@ def permission_required(permission_name):
 
 
 def admin_required(func):
-    return permission_required('Administrator')(func)
+    return permission_required('ADMINISTER')(func)

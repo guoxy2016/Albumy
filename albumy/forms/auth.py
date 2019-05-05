@@ -12,7 +12,7 @@ class RegisterForm(FlaskForm):
     ])
     email = StringField('Email', validators=[
         DataRequired('请输入内容, 不能以空格开头'),
-        Email(),
+        Email('Email格式错误'),
         Length(1, 254, '不支持超过254个字符的Email地址')
     ])
     username = StringField('用户名', validators=[

@@ -18,11 +18,9 @@ def is_safe_url(target):
 
 
 def redirect_back(default='main.index', **kwargs):
-    for target in (request.args.get('next'), request.referrer):
-        if not target:
-            continue
-        if is_safe_url(target):
-            return redirect(target)
+    target = request.args.get('next')
+    if target and is_safe_url(target):
+        return redirect(target)
     return redirect(url_for(default, **kwargs))
 
 

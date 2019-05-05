@@ -103,7 +103,7 @@ class User(db.Model, UserMixin):
         if not self.is_admin:
             self.locked = True
             self.role = Role.query.filter_by(name='Locked').first()
-            db.session.commti()
+            db.session.commit()
 
     def unlock(self):
         self.locked = False
