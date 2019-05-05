@@ -1,4 +1,5 @@
 import os
+import re
 from urllib.parse import urlparse, urljoin
 
 from PIL import Image
@@ -90,6 +91,29 @@ def validate_image(fp):
     filename_m = resize_image(img_m, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
     filename_s = resize_image(img_s, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
     return dict(name=filename, name_m=filename_m, name_s=filename_s)
+
+
+def validate_email(email):
+    hostname_part = re.compile(r'^(xn-|[a-z0-9]+)(-[a-z0-9]+)*$', re.IGNORECASE)
+    user_regex = re.compile(
+        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*\Z"  # dot-atom
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"\Z)',  # quoted-string
+        re.IGNORECASE)
+
+    if '@' not in email:
+        return False
+    user_part, domain_part = email.rsplit('@', 1)
+    if not user_regex.match(user_part):
+        return False
+    if len(domain_part) > 253:
+        return False
+    parts = domain_part.split('.')
+    for part in parts:
+        if not part or len(part) > 63:
+            return False
+        if not hostname_part.match(part):
+            return False
+    return True
 
 
 # 初始化内容

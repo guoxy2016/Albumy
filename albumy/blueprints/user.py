@@ -162,8 +162,6 @@ def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit() and current_user.validate_password(form.old_password.data):
         current_user.password = form.password1.data
-        # user = current_user._get_current_object()
-        # user.password = form.password1.data
         db.session.commit()
         flash('密码修改成功.', 'success')
         return redirect(url_for('.index', username=current_user.username))
@@ -228,7 +226,9 @@ def privacy_setting():
 def delete_account():
     form = DeleteAccountForm()
     if form.validate_on_submit():
-        db.session.delete(current_user._get_current_object())
+        user = current_user._get_current_object()
+        logout_user()
+        db.session.delete(user)
         db.session.commit()
         flash('你自由啦, 哈哈哈! 再见', 'success')
         return redirect(url_for('main.index'))

@@ -97,12 +97,12 @@
                                            class="btn btn-secondary btn-sm" value="解封">
                                 </form>
                             {% endif %}
+                        {% endif %}
                             <a class="btn btn-light btn-sm" href="mailto:{{ user.email }}">Email</a>
                             {% if current_user.is_admin %}
                                 <a class="btn btn-warning btn-sm"
                                    href="{{ url_for('admin.edit_profile_admin', user_id=user.id, next=request.full_path) }}">资料编辑</a>
                             {% endif %}
-                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

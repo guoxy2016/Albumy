@@ -59,8 +59,6 @@ def unblock_user(user_id):
 @admin_required
 def edit_profile_admin(user_id):
     user = User.query.get_or_404(user_id)
-    if current_user.role.level >= user.role.level:
-        abort(403)
     form = EditProfileAdminForm(user=user)
     if form.validate_on_submit():
         user.name = form.name.data

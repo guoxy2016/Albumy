@@ -67,7 +67,7 @@
                 <div class="card-header"><span class="oi oi-image"></span>图片</div>
                 <div class="card-body">
                     <h4 class="card-title">总数: {{ photo_count|default('0') }}</h4>
-                    <p class="card-text">举报数: {{ reported_photo_count|default('0') }}</p>
+                    <p class="card-text">举报数: {{ reported_photos_count|default('0') }}</p>
                     <a class="btn btn-primary text-white" href="{{ url_for('.manage_photo') }}">管理</a>
                 </div>
             </div>

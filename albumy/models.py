@@ -208,7 +208,7 @@ class Photo(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', back_populates='photos')
     tags = db.relationship('Tag', back_populates='photos', secondary='tagging')
-    comments = db.relationship('Comment', back_populates='photo')
+    comments = db.relationship('Comment', back_populates='photo', cascade='all')
     collectors = db.relationship('Collect', back_populates='collected', cascade='all')
 
 

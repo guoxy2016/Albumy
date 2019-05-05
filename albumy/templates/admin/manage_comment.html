@@ -18,7 +18,7 @@
                     aria-haspopup="true" aria-expanded="false">按{{ order_rule }}排序 <span class="oi oi-elevator"></span>
             </button>
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {% if order_rule == 'flag' %}
+                {% if order_rule == '举报数量' %}
                     <a class="dropdown-item" href="{{ url_for('.manage_comment', order='by_time') }}">按评论时间排序</a>
                 {% else %}
                     <a class="dropdown-item" href="{{ url_for('.manage_comment', order='by_flag') }}">按举报数量排序</a>

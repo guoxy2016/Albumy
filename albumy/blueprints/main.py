@@ -115,10 +115,14 @@ def delete_photo(photo_id):
     db.session.delete(photo)
     db.session.commit()
 
+    if request.args.get('next'):
+        return redirect_back()
+
     photo_n = Photo.query.with_parent(photo.author).filter(Photo.id < photo_id).order_by(Photo.id.desc()).first()
     if photo_n is None:
         photo_p = Photo.query.with_parent(photo.author).filter(Photo.id > photo_id).order_by(Photo.id.asc()).first()
         if photo_p is None:
+            flash('没有图片了', 'warning')
             return redirect(url_for('user.index', username=photo.author.username))
         return redirect(url_for('.show_photo', photo_id=photo_p.id))
     return redirect(url_for('.show_photo', photo_id=photo_n.id))
@@ -272,7 +276,7 @@ def delete_comment(comment_id):
     return redirect_back()
 
 
-@main_bp.route('/report/comment/<int:comment_id>')
+@main_bp.route('/report/comment/<int:comment_id>', methods=['POST'])
 @login_required
 @confirm_required
 def report_comment(comment_id):

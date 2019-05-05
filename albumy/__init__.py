@@ -4,11 +4,11 @@ import click
 from flask import Flask, render_template
 from flask_login import current_user
 
+from .blueprints.admin import admin_bp
 from .blueprints.ajax import ajax_bp
 from .blueprints.auth import auth_bp
 from .blueprints.main import main_bp
 from .blueprints.user import user_bp
-from .blueprints.admin import admin_bp
 from .extensions import db, mail, login_manager, bootstrap, migrate, moment, dropzone, csrf, avatars, toolbar, whooshee
 from .models import User, Role, Permission, Photo, Tag, Comment, Collect, Follow, Notification
 
@@ -119,6 +119,39 @@ def register_commends(app=None):
         Role.init_role()
 
         click.echo('Done!')
+
+    @app.cli.command()
+    @click.option('-e', '--email', prompt=True, help='输入邮箱, 登陆使用')
+    @click.password_option('-p', '--password', prompt=True, help='输入密码, 长度8-128位')
+    @click.option('-n', '--name', help='姓名, 指定之后可以创建头像')
+    @click.option('-u', '--username', help='用户名, 指定唯一用户标识')
+    def create_superuser(email, password, name, username):
+        """建超级管理用户如果用户已经存在就把该用户变为超级用户"""
+        from .utils import validate_email
+        role = Role.query.filter_by(name='Administrator').first()
+        if not role:
+            click.echo('没有初始权限, 请先执行 flask init')
+            raise click.Abort()
+        if not validate_email(email):
+            raise click.BadArgumentUsage('邮箱的格式不正确!')
+        if 8 > len(password) or len(password) > 128:
+            raise click.BadArgumentUsage('密码的长度范围是8-128')
+        user = User.query.filter_by(email=email).first() or User.query.filter_by(username=username).first()
+        if user is None:
+            user = User(email=email, name=name or email, username=username or name or email)
+            click.echo('正在创建超级用户')
+        else:
+            click.echo('更改用户:\n'
+                       '    Name: %s\n'
+                       '    Email: %s\n'
+                       '    Username: %s\n'
+                       '为超级管理员' % (user.name, user.email, user.username))
+        user.confirmed = True
+        user.password = password
+        user.role = role
+        db.session.add(user)
+        db.session.commit()
+        click.echo('完成!')
 
     @app.cli.command()
     @click.option('--user', default=6, help='Quantity of users, default is 6')
