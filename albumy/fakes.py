@@ -14,11 +14,11 @@ fake = Faker('zh_CN')
 
 def fake_admin():
     admin = User(
-        name='Guoxy2016',
+        name='郭星宇',
         email=os.getenv('ALBUMY_ADMIN', 'admin@helloflask.com'),
         username='guoxy2016',
         website='https://github.com/guoxy2016',
-        bio='python python',
+        bio='python程序员',
         location='北京',
         confirmed=True
     )

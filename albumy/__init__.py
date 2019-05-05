@@ -98,7 +98,7 @@ def register_errors(app=None):
 
 
 def register_commends(app=None):
-    @app.cli.command(name='init_db')
+    @app.cli.command()
     @click.option('--drop', is_flag=True, help='Drop all data before create.')
     def init_db(drop):
         """Initialize the database"""
@@ -109,7 +109,7 @@ def register_commends(app=None):
         db.create_all()
         click.echo('create all.')
 
-    @app.cli.command(name='init')
+    @app.cli.command()
     def init():
         """Initialize Albumy"""
         click.echo('Initializing the database')
