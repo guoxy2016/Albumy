@@ -11,3 +11,4 @@ uploads/*
 uploads/avatars/*
 !uploads/avatars/.gitkeep
 whooshee
+.vscode
