@@ -45,7 +45,7 @@ def show_collections(username):
 def follow(username):
     user = User.query.filter_by(username=username).first_or_404()
     if current_user.is_following(user):
-        flash('重复操作, 以关注该用户', 'info')
+        flash('重复操作, 已关注该用户', 'info')
         return redirect(url_for('.index', username=username))
     current_user.follow(user)
     db.session.commit()
@@ -69,7 +69,6 @@ def unfollow(username):
 
 
 @user_bp.route('/<username>/followers')
-@login_required
 def show_followers(username):
     user = User.query.filter_by(username=username).first_or_404()
     page = request.args.get('page', 1, type=int)
@@ -80,7 +79,6 @@ def show_followers(username):
 
 
 @user_bp.route('/<username>/following')
-@login_required
 def show_following(username):
     user = User.query.filter_by(username=username).first_or_404()
     page = request.args.get('page', 1, type=int)

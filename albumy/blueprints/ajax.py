@@ -16,7 +16,7 @@ def get_profile(user_id):
 @ajax_bp.route('/follow/<username>', methods=['POST'])
 def follow(username):
     if not current_user.is_authenticated:
-        return jsonify(message='用户未登录'), 403
+        return jsonify(message='用户未登录'), 401
     if not current_user.confirmed:
         return jsonify(message='请验证邮箱后操作'), 400
     if not current_user.can('FOLLOW'):
@@ -35,7 +35,7 @@ def follow(username):
 @ajax_bp.route('/unfollow/<username>', methods=['POST'])
 def unfollow(username):
     if not current_user.is_authenticated:
-        return jsonify(message='用户未登录'), 403
+        return jsonify(message='用户未登录'), 401
 
     user = User.query.filter_by(username=username).first_or_404()
     if not current_user.is_following(user):
@@ -55,7 +55,7 @@ def followers_count(user_id):
 @ajax_bp.route('/notifications-count')
 def notifications_count():
     if not current_user.is_authenticated:
-        return jsonify(message='用户未登录'), 403
+        return jsonify(message='用户未登录'), 401
     count = Notification.query.with_parent(current_user).filter_by(is_read=False).count()
     return jsonify(count=count)
 
@@ -63,7 +63,7 @@ def notifications_count():
 @ajax_bp.route('/collect/<int:photo_id>', methods=['POST'])
 def collect(photo_id):
     if not current_user.is_authenticated:
-        return jsonify(message='用户未登录'), 403
+        return jsonify(message='用户未登录'), 401
     if not current_user.confirmed:
         return jsonify(message='请验证邮箱后操作'), 400
     if not current_user.can('COLLECT'):
@@ -71,7 +71,7 @@ def collect(photo_id):
 
     photo = Photo.query.get_or_404(photo_id)
     if current_user.is_collecting(photo):
-        return jsonify('重复的操作, 用户已收藏.'), 400
+        return jsonify(message='重复的操作, 用户已收藏.'), 400
     current_user.collect(photo)
     return jsonify(message='收藏图片成功')
 
@@ -79,10 +79,10 @@ def collect(photo_id):
 @ajax_bp.route('uncollect/<int:photo_id>', methods=['POST'])
 def uncollect(photo_id):
     if not current_user.is_authenticated:
-        return jsonify(message='用户未登录'), 403
+        return jsonify(message='用户未登录'), 401
     photo = Photo.query.get_or_404(photo_id)
     if not current_user.is_collecting(photo):
-        return jsonify('你还没有收藏这张图片'), 400
+        return jsonify(message='你还没有收藏这张图片'), 400
     current_user.uncollect(photo)
     return jsonify(message='取消收藏成功')
 
@@ -92,18 +92,3 @@ def collectors_count(photo_id):
     photo = Photo.query.get_or_404(photo_id)
     count = len(photo.collectors)
     return jsonify(count=count)
-
-
-@ajax_bp.errorhandler(400)
-def bad_require(e):
-    return jsonify(message=e.description), 400
-
-
-@ajax_bp.errorhandler(404)
-def not_found(e):
-    return jsonify(message=e.description), 404
-
-
-@ajax_bp.errorhandler(500)
-def server_error(e):
-    return jsonify(message=e.description), 500

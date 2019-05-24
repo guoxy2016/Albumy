@@ -13,7 +13,7 @@ def confirm_required(func):
                              '<a class="alert-link" href="%s">点击这里</a>重新发送'
                              % url_for('auth.resend_confirm_email'))
             flash(message, 'warning')
-            return redirect('main.index')
+            return redirect(url_for('main.index'))
         return func(*args, **kwargs)
     return decorated_function
 

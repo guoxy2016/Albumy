@@ -51,7 +51,7 @@ def login():
                 return redirect_back()
             else:
                 flash('帐户被封禁了', 'warning')
-                return redirect('main.index')
+                return redirect(url_for('main.index'))
         flash('用户名或密码错误', 'warning')
     return render_template('auth/login.html', form=form)
 
@@ -134,8 +134,8 @@ def re_authenticate():
         return redirect(url_for('main.index'))
     form = ReLoginForm()
     if form.validate_on_submit():
-        if current_user.email == form.email.data and current_user.validate_password(form.password.data):
+        if current_user.validate_password(form.password.data):
             confirm_login()
             return redirect_back()
-        flash('邮箱地址或密码错误, 请重新输入', 'warning')
+        flash('密码错误, 请重新输入', 'warning')
     return render_template('auth/login.html', form=form)

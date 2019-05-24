@@ -14,11 +14,11 @@ DATABASE_URI=
 ```
 pip3 install pipenv
 pipenv install --dev
-pieenv shell
+pipenv shell
 flask init
 flask run
 #或者运行
-flask gorge
+flask forge
 flask run
 ```
 

@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 watchdog = "*"
 faker = "*"
+coverage = "*"
 
 [packages]
 python-dotenv = "*"

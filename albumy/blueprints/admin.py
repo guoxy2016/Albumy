@@ -50,7 +50,7 @@ def block_user(user_id):
 def unblock_user(user_id):
     user = User.query.get_or_404(user_id)
     user.unblock()
-    flash('用户被解封', 'info')
+    flash('用户已解封', 'info')
     return redirect_back()
 
 
@@ -65,7 +65,7 @@ def edit_profile_admin(user_id):
         role = Role.query.get(form.role.data)
         if role.name == 'Locked':
             user.lock()
-        if role.name != 'Administrator':
+        if current_user != user and role.name != 'Administrator':
             user.role = role
         user.bio = form.bio.data
         user.website = form.website.data
@@ -89,7 +89,7 @@ def edit_profile_admin(user_id):
     return render_template('admin/edit_profile.html', form=form, user=user)
 
 
-@admin_bp.route('/delete/tag/<int:tag_id>', methods=['GET', 'POST'])
+@admin_bp.route('/delete/tag/<int:tag_id>', methods=['POST'])
 @login_required
 @permission_required('MODERATE')
 def delete_tag(tag_id):
@@ -144,16 +144,16 @@ def manage_user():
     filter_rule = request.args.get('filter', 'all')  # 'all', 'locked', 'blocked', 'administrator', 'moderator'
     page = request.args.get('page', 1, int)
     per_page = current_app.config['ALBUMY_MANAGE_USER_PER_PAGE']
-    administrator = Role.query.filter_by(name='Administrator').first()
-    moderator = Role.query.filter_by(name='Moderator').first()
     pagination = User.query
     if filter_rule == 'locked':
         pagination = pagination.filter_by(locked=True)
     elif filter_rule == 'blocked':
         pagination = pagination.filter_by(active=False)
     elif filter_rule == 'administrator':
+        administrator = Role.query.filter_by(name='Administrator').first()
         pagination = pagination.filter_by(role=administrator)
     elif filter_rule == 'moderator':
+        moderator = Role.query.filter_by(name='Moderator').first()
         pagination = pagination.filter_by(role=moderator)
     pagination = pagination.order_by(User.member_since.desc()).paginate(page, per_page)
     users = pagination.items

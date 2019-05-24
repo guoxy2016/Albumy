@@ -114,6 +114,7 @@ def delete_photo(photo_id):
         abort(403)
     db.session.delete(photo)
     db.session.commit()
+    flash('图片已删除!')
 
     if request.args.get('next'):
         return redirect_back()
@@ -213,7 +214,7 @@ def show_tag(tag_id, order):
     return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
 
 
-@main_bp.route('/set-comment/<int:photo_id>')
+@main_bp.route('/set-comment/<int:photo_id>', methods=['POST'])
 @login_required
 def set_comment(photo_id):
     photo = Photo.query.get_or_404(photo_id)

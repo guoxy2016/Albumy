@@ -1,7 +1,7 @@
 import os
 
 import click
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_login import current_user
 
 from .blueprints.admin import admin_bp
@@ -78,23 +78,45 @@ def register_template_context(app=None):
 def register_errors(app=None):
     @app.errorhandler(400)
     def bad_request(e):
-        return render_template('errors/400.html', description=e.description), 400
+        if request.path.startswith('/ajax'):
+            return jsonify(message=e.description), 400
+        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 400
 
     @app.errorhandler(403)
     def forbidden(e):
-        return render_template('errors/403.html', description=e.description), 403
+        if request.path.startswith('/ajax'):
+            return jsonify(message=e.description), 403
+        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 403
 
     @app.errorhandler(404)
     def not_found(e):
-        return render_template('errors/404.html', description=e.description), 404
+        if request.path.startswith('/ajax'):
+            return jsonify(message=e.description), 404
+        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 404
+
+    @app.errorhandler(405)
+    def not_found(e):
+        if request.path.startswith('/ajax'):
+            return jsonify(message=e.description), 405
+        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 405
 
     @app.errorhandler(413)
     def too_large(e):
-        return render_template('errors/413.html', description=e.description), 413
+        if request.path.startswith('/ajax'):
+            return jsonify(message=e.description), 413
+        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 413
 
     @app.errorhandler(500)
-    def server_error(e):
-        return render_template('errors/500.html', description=e.description), 500
+    def server_error(_):
+        description = (
+            "The server encountered an internal error and was unable to"
+            " complete your request. Either the server is overloaded or"
+            " there is an error in the application."
+        )
+        if request.path.startswith('/ajax'):
+            return jsonify(message=description), 500
+
+        return render_template('errors/500.html', description=description), 500
 
 
 def register_commends(app=None):
@@ -130,7 +152,7 @@ def register_commends(app=None):
         from .utils import validate_email
         role = Role.query.filter_by(name='Administrator').first()
         if not role:
-            click.echo('没有初始权限, 请先执行 flask init')
+            click.echo('请先执行 flask init')
             raise click.Abort()
         if not validate_email(email):
             raise click.BadArgumentUsage('邮箱的格式不正确!')

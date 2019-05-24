@@ -62,7 +62,7 @@ class User(db.Model, UserMixin):
             if self.email == current_app.config['ALBUMY_ADMIN_EMAIL']:
                 self.role = Role.query.filter_by(name='Administrator').first()
             else:
-                self.role = Role.query.filter_by(name='User').first()
+                self.role = Role.query.filter_by(name='Normal').first()
 
     def collect(self, photo):
         if not self.is_collecting(photo):
@@ -107,7 +107,7 @@ class User(db.Model, UserMixin):
 
     def unlock(self):
         self.locked = False
-        self.role = Role.query.filter_by(name='User').first()
+        self.role = Role.query.filter_by(name='Normal').first()
         db.session.commit()
 
     @property
@@ -157,7 +157,7 @@ class Role(db.Model):
     def init_role():
         roles_permissions_map = {
             'Locked': {'permissions': ['FOLLOW', 'COLLECT'], 'level': 100},
-            'User': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'], 'level': 100},
+            'Normal': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD'], 'level': 50},
             'Moderator': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE'], 'level': 1},
             'Administrator': {'permissions': ['FOLLOW', 'COLLECT', 'COMMENT', 'UPLOAD', 'MODERATE', 'ADMINISTER'],
                               'level': 0}
@@ -278,7 +278,7 @@ def delete_photos(mapper, connection, target):
 
 @db.event.listens_for(User.avatar_raw, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    if symbol('NO_VALUE') != oldvalue:
+    if symbol('NO_VALUE') != oldvalue and oldvalue:
         path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
         if os.path.exists(path):
             os.remove(path)

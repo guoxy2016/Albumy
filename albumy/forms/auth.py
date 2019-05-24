@@ -42,18 +42,16 @@ class RegisterForm(FlaskForm):
             raise ValidationError('这个用户名已被注册!')
 
 
+class ReLoginForm(FlaskForm):
+    password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
+    submit = SubmitField('登陆')
+
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
                                              Email('Email邮件格式错误')])
     password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
     remember = BooleanField('记住我')
-    submit = SubmitField('登陆')
-
-
-class ReLoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(1, 254, 'Email的长度超过254'),
-                                             Email('Email邮件格式错误')])
-    password = PasswordField('密码', validators=[DataRequired('请输入内容, 不能以空格开头'), Length(8, 128, '密码的长度在8-128位之间')])
     submit = SubmitField('登陆')
 
 

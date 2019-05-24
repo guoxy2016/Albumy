@@ -293,3 +293,19 @@ footer {
     left: 50%;
     bottom: 30px;
 }
+
+.manager-photo-desc {
+    width: 400px;
+}
+
+.manager-photo-tag {
+    width: 80px;
+}
+
+.manager-user-desc {
+    width: 200px;
+}
+
+.manager-user-p-count {
+    width: 60px;
+}
