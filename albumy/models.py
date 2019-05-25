@@ -278,7 +278,7 @@ def delete_photos(mapper, connection, target):
 
 @db.event.listens_for(User.avatar_raw, 'set')
 def change_avatar(target, value, oldvalue, initiator):
-    if symbol('NO_VALUE') != oldvalue and oldvalue:
+    if oldvalue and symbol('NO_VALUE') != oldvalue:
         path = os.path.join(current_app.config['AVATARS_SAVE_PATH'], oldvalue)
         if os.path.exists(path):
             os.remove(path)
