@@ -1,4 +1,6 @@
+import logging
 import os
+from logging.handlers import RotatingFileHandler, SMTPHandler
 
 import click
 from flask import Flask, render_template, request, jsonify
@@ -33,7 +35,36 @@ def create_app(config_name=None):
 
 
 def register_logging(app=None):
-    pass
+    app.logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s:%(lineno)s - %(message)')
+    file_handler = RotatingFileHandler('logs/data.log', maxBytes=10 * 1024 * 1024, backupCount=10)
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+
+    class RequestFormatter(logging.Formatter):
+        def format(self, record):
+            record.url = request.url
+            record.remote_addr = request.remote_addr
+            return super(RequestFormatter, self).format(record)
+
+    request_formatter = RequestFormatter(
+        '[%(asctime)s] - "%(remote_addr)s : %(url)s" - %(levelname)s - %(module)s:%(lineno)s - %(message)s'
+    )
+
+    mail_handler = SMTPHandler(
+        mailhost=app.config['MAIL_SERVER'],
+        fromaddr=app.config['MAIL_USERNAME'],
+        toaddrs=app.config['ALBUMY_ADMIN_EMAIL'],
+        subject='Albumy程序错误',
+        credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+    )
+    mail_handler.setFormatter(request_formatter)
+    mail_handler.setLevel(logging.ERROR)
+
+    if not app.debug:
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(mail_handler)
 
 
 def register_extensions(app=None):
