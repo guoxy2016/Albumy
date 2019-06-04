@@ -37,7 +37,7 @@ def create_app(config_name=None):
 def register_logging(app=None):
     app.logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(filename)s:%(lineno)s - %(message)')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - "%(pathname)s", line:%(lineno)s - %(message)s')
     file_handler = RotatingFileHandler('logs/data.log', maxBytes=10 * 1024 * 1024, backupCount=10)
     file_handler.setFormatter(formatter)
     file_handler.setLevel(logging.INFO)
@@ -49,7 +49,7 @@ def register_logging(app=None):
             return super(RequestFormatter, self).format(record)
 
     request_formatter = RequestFormatter(
-        '[%(asctime)s] - "%(remote_addr)s : %(url)s" - %(levelname)s - %(module)s:%(lineno)s - %(message)s'
+        '[%(asctime)s] - "%(remote_addr)s : %(url)s" - %(levelname)s - "%(pathname)s", line:%(lineno)s - %(message)s'
     )
 
     mail_handler = SMTPHandler(
