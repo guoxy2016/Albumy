@@ -1,0 +1,12 @@
+{% extends 'user/settings/base.jinja2' %}
+
+{% block title %}个人资料{% endblock %}
+
+{% block setting_content %}
+    <div class="card w-100 bg-light">
+        <h3 class="card-header">个人资料</h3>
+        <div class="card-body">
+            {{ render_form(form) }}
+        </div>
+    </div>
+{% endblock %}

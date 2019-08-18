@@ -86,7 +86,7 @@ def edit_profile_admin(user_id):
     form.email.data = user.email
     form.confirmed.data = user.confirmed
     form.active.data = user.active
-    return render_template('admin/edit_profile.html', form=form, user=user)
+    return render_template('admin/edit_profile.jinja2', form=form, user=user)
 
 
 @admin_bp.route('/delete/tag/<int:tag_id>', methods=['POST'])
@@ -112,7 +112,7 @@ def index():
     tag_count = Tag.query.count()
     comment_count = Comment.query.count()
     reported_comments_count = Comment.query.filter(Comment.flag > 0).count()
-    return render_template('admin/index.html', user_count=user_count, photo_count=photo_count,
+    return render_template('admin/index.jinja2', user_count=user_count, photo_count=photo_count,
                            tag_count=tag_count, comment_count=comment_count, locked_user_count=locked_user_count,
                            blocked_user_count=blocked_user_count, reported_comments_count=reported_comments_count,
                            reported_photos_count=reported_photos_count)
@@ -134,7 +134,7 @@ def manage_photo(order):
         pagination = pagination.order_by(Photo.timestamp.desc())
     pagination = pagination.paginate(page, per_page)
     photos = pagination.items
-    return render_template('admin/manage_photo.html', pagination=pagination, photos=photos, order_rule=order_rule)
+    return render_template('admin/manage_photo.jinja2', pagination=pagination, photos=photos, order_rule=order_rule)
 
 
 @admin_bp.route('/manage/user')
@@ -157,7 +157,7 @@ def manage_user():
         pagination = pagination.filter_by(role=moderator)
     pagination = pagination.order_by(User.member_since.desc()).paginate(page, per_page)
     users = pagination.items
-    return render_template('admin/manage_user.html', users=users, pagination=pagination)
+    return render_template('admin/manage_user.jinja2', users=users, pagination=pagination)
 
 
 @admin_bp.route('/manage/tag')
@@ -168,7 +168,7 @@ def manage_tag():
     per_page = current_app.config['ALBUMY_MANAGE_TAG_PER_PAGE']
     pagination = Tag.query.order_by(Tag.id.desc()).paginate(page, per_page)
     tags = pagination.items
-    return render_template('admin/manage_tag.html', tags=tags, pagination=pagination)
+    return render_template('admin/manage_tag.jinja2', tags=tags, pagination=pagination)
 
 
 @admin_bp.route('manage/comment', defaults={'order': 'by_flag'})
@@ -187,4 +187,4 @@ def manage_comment(order):
         pagination = pagination.order_by(Comment.flag.desc())
     pagination = pagination.paginate(page, per_page)
     comments = pagination.items
-    return render_template('admin/manage_comment.html', comments=comments, pagination=pagination, order_rule=order_rule)
+    return render_template('admin/manage_comment.jinja2', comments=comments, pagination=pagination, order_rule=order_rule)

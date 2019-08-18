@@ -26,13 +26,13 @@ def index():
         pagination = None
         photos = None
     tags = Tag.query.join(Tag.photos).group_by(Tag.id).order_by(db.func.count().desc()).limit(10)
-    return render_template('main/index.html', pagination=pagination, photos=photos, tags=tags)
+    return render_template('main/index.jinja2', pagination=pagination, photos=photos, tags=tags)
 
 
 @main_bp.route('/explore')
 def explore():
     photos = Photo.query.order_by(db.func.random()).limit(12)
-    return render_template('main/explore.html', photos=photos)
+    return render_template('main/explore.jinja2', photos=photos)
 
 
 @main_bp.route('/upload', methods=['GET', 'POST'])
@@ -53,7 +53,7 @@ def upload():
         )
         db.session.add(photo)
         db.session.commit()
-    return render_template('main/upload.html')
+    return render_template('main/upload.jinja2')
 
 
 @main_bp.route('/avatars/<path:filename>')
@@ -80,7 +80,7 @@ def show_photo(photo_id):
 
     description_form.description.data = photo.description
 
-    return render_template('main/photo.html', photo=photo, description_form=description_form, tag_form=tag_form,
+    return render_template('main/photo.jinja2', photo=photo, description_form=description_form, tag_form=tag_form,
                            pagination=pagination, comments=comments, comment_form=comment_form)
 
 
@@ -211,7 +211,7 @@ def show_tag(tag_id, order):
     if order == 'by_collects':
         order_rule = '收藏量'
         photos.sort(key=lambda x: len(x.collectors), reverse=True)
-    return render_template('main/tag.html', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
+    return render_template('main/tag.jinja2', tag=tag, pagination=pagination, photos=photos, order_rule=order_rule)
 
 
 @main_bp.route('/set-comment/<int:photo_id>', methods=['POST'])
@@ -323,7 +323,7 @@ def show_collectors(photo_id):
     per_page = current_app.config['ALBUMY_USER_PER_PAGE']
     pagination = Collect.query.with_parent(photo).order_by(Collect.timestamp.asc()).paginate(page, per_page)
     collects = pagination.items
-    return render_template('main/collectors.html', collects=collects, photo=photo, pagination=pagination)
+    return render_template('main/collectors.jinja2', collects=collects, photo=photo, pagination=pagination)
 
 
 @main_bp.route('/notifications')
@@ -337,7 +337,7 @@ def show_notifications():
         notifications = notifications.filter_by(is_read=False)
     pagination = notifications.order_by(Notification.timestamp.desc()).paginate(page, per_page)
     notifications = pagination.items
-    return render_template('main/notifications.html', pagination=pagination, notifications=notifications)
+    return render_template('main/notifications.jinja2', pagination=pagination, notifications=notifications)
 
 
 @main_bp.route('/notifications/read/<int:notification_id>', methods=['POST'])
@@ -381,4 +381,4 @@ def search():
     else:
         pagination = Photo.query.whooshee_search(q).paginate(page, per_page)
     results = pagination.items
-    return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)
+    return render_template('main/search.jinja2', q=q, results=results, pagination=pagination, category=category)

@@ -111,31 +111,31 @@ def register_errors(app=None):
     def bad_request(e):
         if request.path.startswith('/ajax'):
             return jsonify(message=e.description), 400
-        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 400
+        return render_template('errors/error.jinja2', code=e.code, name=e.name, description=e.description), 400
 
     @app.errorhandler(403)
     def forbidden(e):
         if request.path.startswith('/ajax'):
             return jsonify(message=e.description), 403
-        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 403
+        return render_template('errors/error.jinja2', code=e.code, name=e.name, description=e.description), 403
 
     @app.errorhandler(404)
     def not_found(e):
         if request.path.startswith('/ajax'):
             return jsonify(message=e.description), 404
-        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 404
+        return render_template('errors/error.jinja2', code=e.code, name=e.name, description=e.description), 404
 
     @app.errorhandler(405)
     def not_found(e):
         if request.path.startswith('/ajax'):
             return jsonify(message=e.description), 405
-        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 405
+        return render_template('errors/error.jinja2', code=e.code, name=e.name, description=e.description), 405
 
     @app.errorhandler(413)
     def too_large(e):
         if request.path.startswith('/ajax'):
             return jsonify(message=e.description), 413
-        return render_template('errors/error.html', code=e.code, name=e.name, description=e.description), 413
+        return render_template('errors/error.jinja2', code=e.code, name=e.name, description=e.description), 413
 
     @app.errorhandler(500)
     def server_error(_):
@@ -147,7 +147,7 @@ def register_errors(app=None):
         if request.path.startswith('/ajax'):
             return jsonify(message=description), 500
 
-        return render_template('errors/500.html', description=description), 500
+        return render_template('errors/500.jinja2', description=description), 500
 
 
 def register_commends(app=None):

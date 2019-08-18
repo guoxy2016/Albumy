@@ -33,7 +33,7 @@ def register():
         if next_path:
             return redirect(url_for('.login', next=next_path))
         return redirect(url_for('.login'))
-    return render_template('auth/register.html', form=form)
+    return render_template('auth/register.jinja2', form=form)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -53,7 +53,7 @@ def login():
                 flash('帐户被封禁了', 'warning')
                 return redirect(url_for('main.index'))
         flash('用户名或密码错误', 'warning')
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login.jinja2', form=form)
 
 
 @auth_bp.route('/logout')
@@ -102,7 +102,7 @@ def forget_password():
             return redirect(url_for('.login'))
         flash('邮件验证错误!', 'warning')
         return redirect(url_for('.forget_password'))
-    return render_template('auth/reset_password.html', form=form)
+    return render_template('auth/reset_password.jinja2', form=form)
 
 
 @auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
@@ -124,7 +124,7 @@ def reset_password(token):
             flash('令牌失效, 重新发送验证邮件', 'danger')
             return redirect(url_for('.forget_password'))
 
-    return render_template('auth/reset_password.html', form=form)
+    return render_template('auth/reset_password.jinja2', form=form)
 
 
 @auth_bp.route('re-authenticate', methods=['GET', 'POST'])
@@ -138,4 +138,4 @@ def re_authenticate():
             confirm_login()
             return redirect_back()
         flash('密码错误, 请重新输入', 'warning')
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login.jinja2', form=form)

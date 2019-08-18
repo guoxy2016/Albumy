@@ -25,7 +25,7 @@ def index(username):
     per_page = current_app.config['ALBUMY_PHOTO_PER_PAGE']
     pagination = Photo.query.with_parent(user).order_by(Photo.timestamp.desc()).paginate(page, per_page)
     photos = pagination.items
-    return render_template('user/index.html', user=user, pagination=pagination, photos=photos)
+    return render_template('user/index.jinja2', user=user, pagination=pagination, photos=photos)
 
 
 @user_bp.route('/<username>/collections')
@@ -35,7 +35,7 @@ def show_collections(username):
     per_page = current_app.config['ALBUMY_PHOTO_PER_PAGE']
     pagination = Collect.query.with_parent(user).order_by(Collect.timestamp.desc()).paginate(page, per_page)
     collects = pagination.items
-    return render_template('user/collections.html', user=user, pagination=pagination, collects=collects)
+    return render_template('user/collections.jinja2', user=user, pagination=pagination, collects=collects)
 
 
 @user_bp.route('/follow/<username>', methods=['POST'])
@@ -75,7 +75,7 @@ def show_followers(username):
     per_page = current_app.config['ALBUMY_USER_PER_PAGE']
     pagination = user.followers.paginate(page, per_page)
     follows = pagination.items
-    return render_template('user/followers.html', user=user, pagination=pagination, follows=follows)
+    return render_template('user/followers.jinja2', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/<username>/following')
@@ -85,7 +85,7 @@ def show_following(username):
     per_page = current_app.config['ALBUMY_USER_PER_PAGE']
     pagination = user.following.paginate(page, per_page)
     follows = pagination.items
-    return render_template('user/followings.html', user=user, pagination=pagination, follows=follows)
+    return render_template('user/followings.jinja2', user=user, pagination=pagination, follows=follows)
 
 
 @user_bp.route('/user/settings/profile', methods=['GET', 'POST'])
@@ -106,7 +106,7 @@ def edit_profile():
     form.website.data = current_user.website
     form.location.data = current_user.location
     form.bio.data = current_user.bio
-    return render_template('user/settings/edit_profile.html', form=form)
+    return render_template('user/settings/edit_profile.jinja2', form=form)
 
 
 @user_bp.route('/settings/avatar')
@@ -115,7 +115,7 @@ def edit_profile():
 def change_avatar():
     upload_form = UploadAvatarForm()
     crop_from = CropAvatarForm()
-    return render_template('user/settings/change_avatar.html', upload_form=upload_form, crop_from=crop_from)
+    return render_template('user/settings/change_avatar.jinja2', upload_form=upload_form, crop_from=crop_from)
 
 
 @user_bp.route('/settings/avatar/upload', methods=['POST'])
@@ -163,7 +163,7 @@ def change_password():
         db.session.commit()
         flash('密码修改成功.', 'success')
         return redirect(url_for('.index', username=current_user.username))
-    return render_template('user/settings/change_password.html', form=form)
+    return render_template('user/settings/change_password.jinja2', form=form)
 
 
 @user_bp.route('/settings/change-email', methods=['GET', 'POST'])
@@ -175,7 +175,7 @@ def change_email_request():
         send_change_email(current_user, token)
         flash('验证邮箱以发送, 请注意查收.', 'success')
         return redirect(url_for('.index', username=current_user.username))
-    return render_template('user/settings/change_email.html', form=form)
+    return render_template('user/settings/change_email.jinja2', form=form)
 
 
 @user_bp.route('/change-email/<token>')
@@ -203,7 +203,7 @@ def notification_setting():
     form.receive_comment_notification.data = current_user.receive_comment_notification
     form.receive_follow_notification.data = current_user.receive_follow_notification
     form.receive_collect_notification.data = current_user.receive_collect_notification
-    return render_template('user/settings/edit_notification.html', form=form)
+    return render_template('user/settings/edit_notification.jinja2', form=form)
 
 
 @user_bp.route('/settings/privacy', methods=['GET', 'POST'])
@@ -216,7 +216,7 @@ def privacy_setting():
         flash('隐私设置保存成功', 'success')
         return redirect(url_for('.index', username=current_user.username))
     form.public_collections.data = current_user.public_collections
-    return render_template('user/settings/edit_privacy.html', form=form)
+    return render_template('user/settings/edit_privacy.jinja2', form=form)
 
 
 @user_bp.route('/settings/account/delete', methods=['GET', 'POST'])
@@ -230,4 +230,4 @@ def delete_account():
         db.session.commit()
         flash('你自由啦, 哈哈哈! 再见', 'success')
         return redirect(url_for('main.index'))
-    return render_template('user/settings/delete_account.html', form=form)
+    return render_template('user/settings/delete_account.jinja2', form=form)

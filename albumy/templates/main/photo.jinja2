@@ -1,0 +1,78 @@
+{% extends 'base.jinja2' %}
+{% from 'bootstrap/form.html' import render_form, render_field %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+
+{% block title %}{{ photo.author.name }}的照片{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="photo">
+                <a href="{{ url_for('.get_image', filename=photo.filename) }}" target="_blank">
+                    <img class="img-fluid" src="{{ url_for('.get_image', filename=photo.filename_m) }}" alt="">
+                </a>
+            </div>
+            <a class="btn btn-primary btn-sm text-white" data-toggle="modal" data-target="#share-modal">分享</a>
+            {% if current_user == photo.author or current_user.can('MODERATE') %}
+                <a class="btn btn-danger btn-sm text-white" data-toggle="modal" data-target="#confirm-delete"
+                   data-href="{{ url_for('.delete_photo', photo_id=photo.id) }}">
+                    删除
+                </a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+                <form class="inline" method="post" action="{{ url_for('.report_photo', photo_id=photo.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-link btn-sm">举报</button>
+                </form>
+            {% endif %}
+            <p><span class="oi oi-clock"></span>上传于{{ moment(photo.timestamp).format('LL') }}</p>
+            {% include 'main/_comments.jinja2' %}
+        </div>
+        <div class="col-md-4">
+            {% include 'main/_photo_sidebar.jinja2' %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="share-modal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">链接地址</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body w-100">
+                    <input class="form-control" value="{{ url_for('.show_photo', photo_id=photo.id, _external=True) }}"
+                           readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmModalLabel">确认删除</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>你确定要删除吗?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form class="delete-form" action="" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button class="btn btn-danger btn-confirm" type="submit">删除</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

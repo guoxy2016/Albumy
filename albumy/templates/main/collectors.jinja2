@@ -1,0 +1,32 @@
+{% extends 'base.jinja2' %}
+{% from 'bootstrap/pagination.html' import render_pagination %}
+{% from '_macros.jinja2' import user_card with context %}
+
+{% block title %}图片收藏{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <div class="row">
+            <div class="col-md-12">
+                <a class="btn btn-link btn-sm" href="{{ url_for('main.show_photo', photo_id=photo.id) }}">
+                    <span class="oi oi-arrow-left" aria-hidden="true"></span>返回
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>共{{ photo.collectors|length }}个人收藏</h3>
+            {% for collect in collects %}
+                {% if collect.collector.public_collections %}
+                    {{ user_card(user=collect.collector) }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% if collects %}
+        <div class="page-footer">
+            {{ render_pagination(pagination, align='center') }}
+        </div>
+    {% endif %}
+{% endblock %}
